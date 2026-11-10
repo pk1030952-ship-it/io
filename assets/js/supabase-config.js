@@ -1,3 +1,7 @@
-/* Public browser configuration only. Never paste a Supabase service_role key here. */
-window.PJ_SUPABASE_URL = 'YOUR_SUPABASE_PROJECT_URL';
-window.PJ_SUPABASE_ANON_KEY = 'YOUR_SUPABASE_PUBLISHABLE_OR_ANON_KEY';
+/* Supabase public browser configuration.
+   The publishable/anon key is designed for client-side use.
+   Protect all data with correctly configured Row Level Security (RLS).
+   Never place a service_role or sb_secret key in this file.
+*/
+window.PJ_SUPABASE_URL = 'https://wffimpbtcbevbblbbtez.supabase.co';
+window.PJ_SUPABASE_ANON_KEY = 'sb_publishable_waEll8YSNiXxJqWMxTdejg_NgIqz92';

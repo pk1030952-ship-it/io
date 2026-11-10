@@ -1,5 +1,17 @@
 <h1 align="center">Hi 👋, I'm Pankaj Kumar</h1>
-<h3 align="center">A passionate developer, teacher, and creator from India 🇮🇳</h3>
+
+<!-- Animated Typing Effect -->
+<p align="center">
+  <a href="https://git.io/typing-svg">
+    <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=600&size=22&pause=1000&color=0E75B6&center=true&vCenter=true&width=500&lines=Android+App+Developer+📱;BCA+Student+@+IGNOU+🎓;3D+Animator+%26+Teacher+👨‍🏫;Passionate+about+Kotlin+🚀" alt="Typing SVG" />
+  </a>
+</p>
+
+<!-- Animated Coding GIF -->
+<p align="center">
+  <img src="https://raw.githubusercontent.com/ABSphreak/ABSphreak/master/gifs/Hi.gif" width="30px">
+  <img src="https://media.giphy.com/media/qgQUggAC3Pfv687qPC/giphy.gif" width="250" alt="Animated coding gif">
+</p>
 
 <p align="center">
   <!-- Profile Views Counter -->
@@ -24,7 +36,15 @@
   <img src="https://img.shields.io/badge/GitHub%20Actions-2088FF?style=for-the-badge&logo=github-actions&logoColor=white" alt="GitHub Actions" />
 </p>
 
-## 📈 GitHub Stats
-<!-- Dynamically generated stats card -->
-<a href="https://github.com/anuraghazra/github-readme-stats">
-  <img align
+## 📈 GitHub Stats & Activity
+
+<p align="center">
+  <!-- GitHub Stats Card -->
+  <a href="https://github.com/anuraghazra/github-readme-stats">
+    <img src="https://github-readme-stats.vercel.app/api?username=pg&show_icons=true&theme=radium&hide_border=true" alt="Pankaj's GitHub Stats" />
+  </a>
+  <!-- GitHub Top Languages Card -->
+  <a href="https://github.com/anuraghazra/github-readme-stats">
+    <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=pg&layout=compact&theme=radium&hide_border=true" alt="Top Languages" />
+  </a>
+</p>

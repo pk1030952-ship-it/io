@@ -35,10 +35,10 @@ This is the working checklist for the portfolio. A checked item means implemente
 - [ ] Add server-side validation and rate limiting
 
 ## Phase 3 — Admin dashboard
-- [ ] Admin login UI and secure session handling
-- [ ] Database-enforced admin authorization
+- [x] Admin login UI and secure session handling (requires Supabase project config)
+- [x] Database-enforced admin authorization check via admin_users and RLS
 - [ ] Profile editor
-- [ ] Project CRUD and featured-project management
+- [x] Project CRUD and featured-project management UI (requires configured Supabase)
 - [ ] Skills and social links management
 - [ ] Resume/photo upload and replacement
 - [ ] Contact inbox

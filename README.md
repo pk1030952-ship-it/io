@@ -2,9 +2,8 @@
 <img src="https://capsule-render.vercel.app/api?type=waving&color=0E75B6&height=200&section=header&text=Pankaj%20Kumar&fontSize=65&fontColor=ffffff" width="100%"/>
 
 <div align="center">
-  <!-- Old Working Typing SVG Restored -->
-  <a href="https://git.io/typing-svg">
-    <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=600&size=22&pause=1000&color=0E75B6&center=true&vCenter=true&width=500&lines=Android+App+Developer+📱;BCA+Student+@+IGNOU+🎓;3D+Animator+%26+Teacher+👨‍🏫;Passionate+about+Kotlin+🚀" alt="Typing SVG" />
+  <a href="https://github.com/AAPKA_ASLI_USERNAME">
+    <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=600&size=20&pause=1000&color=0E75B6&center=true&vCenter=true&width=500&lines=Kotlin+%26+Android+Developer;BCA+Student+at+IGNOU;Creator+at+Lappu+Toons+Hindi;Educator+%26+Tech+Enthusiast" alt="Typing SVG" />
   </a>
 </div>
 

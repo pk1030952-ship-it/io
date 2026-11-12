@@ -56,38 +56,70 @@ Deno.serve(async (req) => {
   const input = history
     ? `Previous conversation:\n${history}\n\nVisitor: ${message}\nAisha:`
     : message;
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 25000);
-  let response: Response;
-  try {
-    response = await fetch("https://generativelanguage.googleapis.com/v1beta/interactions", {
-      method: "POST",
-      signal: controller.signal,
-      headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
-      body: JSON.stringify({
-        model: "gemini-3.8-flash",
-        store: false,
-        system_instruction: profileContext,
-        input,
-        generation_config: { thinking_level: "low" },
-      }),
-    });
-  } catch (error) {
-    if (error instanceof DOMException && error.name === "AbortError") {
-      return json(504, { error: "AI provider timed out", detail: "Gemini did not respond within 25 seconds. Please retry." }, origin);
+  const models = ["gemini-3.8-flash", "gemini-3.6-flash", "gemini-3.5-flash-lite"];
+  const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+  const retryableMessage = (message: string) =>
+    /high demand|rate limit|too many requests|unavailable|temporar|overload|resource exhausted/i.test(message);
+
+  let answer = "";
+  let lastError = "";
+
+  for (let index = 0; index < models.length; index++) {
+    const model = models[index];
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 20000);
+
+    try {
+      const response = await fetch("https://generativelanguage.googleapis.com/v1beta/interactions", {
+        method: "POST",
+        signal: controller.signal,
+        headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
+        body: JSON.stringify({
+          model,
+          store: false,
+          system_instruction: profileContext,
+          input,
+          generation_config: { thinking_level: "low" },
+        }),
+      });
+
+      const result = await response.json().catch(() => ({}));
+      const providerMessage = String(result?.error?.message || "");
+
+      if (!response.ok) {
+        lastError = `${model}: ${providerMessage || `HTTP ${response.status}`}`;
+        const retryable = response.status === 429 || response.status === 503 ||
+          response.status === 404 || retryableMessage(providerMessage);
+        if (!retryable) {
+          return json(502, { error: "AI provider request failed", detail: providerMessage || `HTTP ${response.status}` }, origin);
+        }
+      } else {
+        answer = Array.isArray(result?.steps)
+          ? result.steps.filter((step: { type?: string }) => step.type === "model_output")
+              .flatMap((step: { content?: { type?: string; text?: string }[] }) => step.content || [])
+              .filter((part: { type?: string }) => part.type === "text")
+              .map((part: { text?: string }) => part.text || "").join("").trim()
+          : "";
+
+        if (answer) break;
+        lastError = `${model}: empty response`;
+      }
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") {
+        lastError = `${model}: timed out after 20 seconds`;
+      } else {
+        lastError = `${model}: ${String(error)}`;
+      }
+    } finally {
+      clearTimeout(timeout);
     }
-    return json(502, { error: "Unable to reach AI provider", detail: String(error) }, origin);
-  } finally {
-    clearTimeout(timeout);
+
+    if (index < models.length - 1) await sleep(2000);
   }
-  const result = await response.json().catch(() => ({}));
-  if (!response.ok) return json(502, { error: "AI provider request failed", detail: result?.error?.message || "Unknown provider error" }, origin);
-  const answer = Array.isArray(result?.steps)
-    ? result.steps.filter((step: { type?: string }) => step.type === "model_output")
-        .flatMap((step: { content?: { type?: string; text?: string }[] }) => step.content || [])
-        .filter((part: { type?: string }) => part.type === "text")
-        .map((part: { text?: string }) => part.text || "").join("").trim()
-    : "";
-  if (!answer) return json(502, { error: "AI returned an empty response" }, origin);
+
+  if (!answer) {
+    console.error("All Gemini fallback models failed:", lastError);
+    return json(503, { error: "Server busy, try again later" }, origin);
+  }
   return json(200, { answer }, origin);
 });

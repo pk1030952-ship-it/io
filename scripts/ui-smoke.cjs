@@ -10,7 +10,7 @@ const root = 'http://127.0.0.1:8765';
       const errors=[];
       page.on('pageerror', e=>errors.push(e.message));
       await page.goto(root+'/index.html',{waitUntil:'domcontentloaded',timeout:30000});
-      await page.locator('#loader.hide').waitFor({timeout:30000});
+      await page.locator('#loader').waitFor({state:'hidden',timeout:30000});
       assert.equal(await page.locator('#mainContent').count(),1,'Main landmark missing');
       assert((await page.locator('.hero h1').textContent()).includes('Pankaj'),'Hero name missing');
       await page.locator('#languageToggle').click();

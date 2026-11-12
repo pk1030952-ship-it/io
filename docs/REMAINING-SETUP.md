@@ -15,8 +15,17 @@ Repository implementation is substantially complete. Items below require live en
 - Draft PR #2 is mergeable and its static CI checks have passed; it is **not merged**.
 - Supabase connector has been suggested but must be explicitly connected before direct live SQL/function deployment. No new Edge Function or SQL change has been applied to Supabase during this review.
 
+## Verified live Supabase deployment (12 November 2026)
+- The connected Supabase project was verified `ACTIVE_HEALTHY`.
+- `ask-to-aisha` Edge Function was updated from version 4 to version 5 with the development branch source.
+- Retrieved deployed version 5 and checked CORS preflight restriction, non-sensitive visitor errors and completed-ADCA factual context.
+- Database contact and analytics policies were inspected read-only. No live schema changes were applied.
+- Security advisor flags `public.is_admin()` as directly executable through the public RPC endpoint by anonymous/authenticated roles. This is a review item; do not revoke execution blindly because existing RLS policies call the function.
+- Supabase Auth leaked-password protection is disabled (security advisor warning). Review available Auth settings before launch.
+- Actual chatbot provider response on the new deployment and complete browser acceptance testing remain pending.
+
 ## Required before merging to main
-1. Deploy the latest `supabase/functions/ask-to-aisha/index.ts` revision in Supabase.
+1. ~~Deploy latest `supabase/functions/ask-to-aisha/index.ts`~~ — deployed and verified as ACTIVE version 5 on 12 November 2026. Re-deploy if Edge source changes.
 2. Test ASK TO AISHA from the final GitHub Pages origin.
 3. Test admin login, project/skill/social CRUD, contact inbox, resume upload and profile-photo upload.
 4. Test public contact form and confirm the message reaches the admin inbox.

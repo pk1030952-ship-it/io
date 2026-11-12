@@ -8,6 +8,7 @@ const root = 'http://127.0.0.1:8765';
     for (const vp of [{width:1280,height:900}, {width:390,height:844}]) {
       const page=await browser.newPage({viewport:vp,reducedMotion:'reduce'});
       const errors=[];
+      await page.addInitScript(()=>localStorage.setItem('pj-aisha-chat-history',JSON.stringify([{role:'user',content:'QA saved question'},{role:'assistant',content:'QA saved answer'}])));
       page.on('pageerror', e=>errors.push(e.message));
       await page.goto(root+'/index.html',{waitUntil:'domcontentloaded',timeout:30000});
       await page.locator('#loader').waitFor({state:'hidden',timeout:30000});
@@ -23,6 +24,7 @@ const root = 'http://127.0.0.1:8765';
       await page.locator('#aishaToggle').click();
       assert.equal(await page.locator('#aishaToggle').getAttribute('aria-expanded'),'true','Chat toggle not opened');
       assert(await page.locator('#aishaPanel').isVisible(),'Chat panel not visible');
+      assert(await page.locator('#aishaMessages').getByText('QA saved answer').count()===1,'Persisted chat history not restored');
       if(vp.width<850){
         await page.locator('#menuToggle').click();
         assert(await page.locator('body').evaluate(el=>el.classList.contains('menu-open')),'Mobile navigation failed');

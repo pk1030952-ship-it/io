@@ -41,3 +41,12 @@ Repository implementation is substantially complete. Items below require live en
 
 ## Deployment rule
 Never publish private residential information or credentials. Never commit Gemini keys, Supabase secret/service-role keys or passwords. Browser code may contain only the Supabase publishable key protected by RLS.
+
+## Public contact endpoint cutover (12 November 2026)
+- Deployed `submit-contact` Edge Function version 1 with `verify_jwt = false`; the function checks the public publishable key, validates origin/inputs and calls a service-role-only database RPC.
+- Applied a transaction-safe RPC enforcing at most one message per fingerprint per 90 seconds and five per 24 hours, with no raw IP saved.
+- Verified second in-transaction test contact was rejected and rolled back all synthetic test data.
+- Revoked direct `anon`/`authenticated` INSERT on `contact_messages` and removed the public insert RLS policy.
+- Anonymous and signed-in visitors cannot directly execute the database RPC; only `service_role` has permission.
+- Updated public frontend to invoke `submit-contact`; **live HTTP/browser end-to-end contact submission is still unverified** because Pages is unpublished.
+- Additional large-scale bot protection (e.g. a verified challenge or gateway abuse controls) is recommended at public launch. IP forwarding headers are best-effort and not sufficient for strong anti-abuse.

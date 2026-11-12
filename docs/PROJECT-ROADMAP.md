@@ -19,19 +19,19 @@ This is the working checklist for the portfolio. A checked item means implemente
 - [ ] Add final resume PDF and working download
 - [ ] Add confirmed social profile URLs
 - [ ] Add confirmed email, WhatsApp and phone details
-- [ ] Build and connect functional contact form
+- [x] Build and connect functional contact form
 - [ ] Implement optional ambient sound with explicit user opt-in
 - [ ] Complete cinematic intro and motion/accessibility preferences
 
 ## Phase 2 — Supabase backend
 - [x] Initial SQL schema draft with RLS enabled
-- [ ] Review SQL in a real Supabase project
-- [ ] Create and configure Supabase project
-- [ ] Verify RLS policies and storage policies
+- [x] Review and apply SQL in the user's Supabase project (7 tables verified)
+- [x] Create and configure Supabase project
+- [x] Apply table RLS policies; Storage policies remain pending
 - [ ] Configure auth providers and redirect URLs
-- [ ] Seed trusted admin account securely
-- [ ] Connect public profile, skills, projects and social links
-- [ ] Connect contact messages and file storage
+- [x] Seed trusted admin account securely
+- [x] Connect public profile, skills, projects and social links to Supabase
+- [x] Connect contact message form and admin inbox; file storage remains pending
 - [ ] Add server-side validation and rate limiting
 
 ## Phase 3 — Admin dashboard
@@ -39,10 +39,10 @@ This is the working checklist for the portfolio. A checked item means implemente
 - [x] Database-enforced admin authorization check via admin_users and RLS
 - [x] Admin profile editor (Supabase-backed; public-page rendering still pending)
 - [x] Project CRUD and featured-project management UI (requires configured Supabase)
-- [ ] Skills and social links management
+- [x] Skills and social links management
 - [ ] Resume/photo upload and replacement
-- [ ] Contact inbox
-- [ ] Live content refresh
+- [x] Contact inbox (read/archive)
+- [x] Public content loads from Supabase on page load; realtime subscriptions pending
 - [ ] Safe code-editing workflow (no arbitrary unauthenticated code execution)
 
 ## Phase 4 — ASK TO AISHA

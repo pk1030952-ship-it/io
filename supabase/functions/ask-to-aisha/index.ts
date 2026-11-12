@@ -56,17 +56,30 @@ Deno.serve(async (req) => {
   const input = history
     ? `Previous conversation:\n${history}\n\nVisitor: ${message}\nAisha:`
     : message;
-  const response = await fetch("https://generativelanguage.googleapis.com/v1beta/interactions", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
-    body: JSON.stringify({
-      model: "gemini-3.8-flash",
-      store: false,
-      system_instruction: profileContext,
-      input,
-      generation_config: { thinking_level: "low" },
-    }),
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 25000);
+  let response: Response;
+  try {
+    response = await fetch("https://generativelanguage.googleapis.com/v1beta/interactions", {
+      method: "POST",
+      signal: controller.signal,
+      headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
+      body: JSON.stringify({
+        model: "gemini-3.8-flash",
+        store: false,
+        system_instruction: profileContext,
+        input,
+        generation_config: { thinking_level: "low" },
+      }),
+    });
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      return json(504, { error: "AI provider timed out", detail: "Gemini did not respond within 25 seconds. Please retry." }, origin);
+    }
+    return json(502, { error: "Unable to reach AI provider", detail: String(error) }, origin);
+  } finally {
+    clearTimeout(timeout);
+  }
   const result = await response.json().catch(() => ({}));
   if (!response.ok) return json(502, { error: "AI provider request failed", detail: result?.error?.message || "Unknown provider error" }, origin);
   const answer = Array.isArray(result?.steps)

@@ -1,5 +1,5 @@
 -- PANKAJ JII: robust public contact submission via an Edge Function.
--- Do not run the final DROP POLICY until submit-contact v1 is deployed and the frontend invokes it.
+-- Edge Function submit-contact v1 must be deployed before this script is applied.
 -- Service-role-only RPC. Public visitors must never invoke this database function directly.
 
 create table if not exists public.contact_submission_limits (
@@ -73,6 +73,5 @@ revoke all on function public.submit_portfolio_contact(text,text,text,text,text)
 grant execute on function public.submit_portfolio_contact(text,text,text,text,text)
   to service_role;
 
--- CUTOVER: Run the statement below only after the Edge Function and
--- updated frontend code are deployed.
--- drop policy if exists "Public submit contact message" on public.contact_messages;
+drop policy if exists "Public submit contact message" on public.contact_messages;
+revoke insert on public.contact_messages from anon, authenticated;

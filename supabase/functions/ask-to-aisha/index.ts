@@ -56,19 +56,32 @@ Deno.serve(async (req) => {
   const input = history
     ? `Previous conversation:\n${history}\n\nVisitor: ${message}\nAisha:`
     : message;
-  const models = ["gemini-3.8-flash", "gemini-3.6-flash", "gemini-3.5-flash-lite"];
+  const preferredModels = [
+    "gemini-3.8-flash",
+    "gemini-3.7-flash",
+    "gemini-3.6-flash",
+    "gemini-3.5-flash",
+    "gemini-3.5-flash-lite",
+    "gemini-3.1-flash-lite",
+  ];
   const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
   const retryableMessage = (message: string) =>
-    /high demand|rate limit|too many requests|unavailable|temporar|overload|resource exhausted/i.test(message);
+    /high demand|rate limit|too many requests|unavailable|temporar|overload|resource exhausted|quota/i.test(message);
+  const deadline = Date.now() + 115000;
 
   let answer = "";
   let lastError = "";
   const attempts: { model: string; status: number | string; detail: string }[] = [];
 
-  for (let index = 0; index < models.length; index++) {
-    const model = models[index];
+  for (let index = 0; index < preferredModels.length; index++) {
+    if (Date.now() >= deadline) break;
+    const model = preferredModels[index];
+    const remaining = deadline - Date.now();
+    const attemptTimeout = Math.max(3000, Math.min(15000, remaining - 1000));
+    if (attemptTimeout < 3000) break;
+
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 20000);
+    const timeout = setTimeout(() => controller.abort(), attemptTimeout);
 
     try {
       const response = await fetch("https://generativelanguage.googleapis.com/v1beta/interactions", {
@@ -90,9 +103,14 @@ Deno.serve(async (req) => {
       if (!response.ok) {
         lastError = `${model}: ${providerMessage || `HTTP ${response.status}`}`;
         attempts.push({ model, status: response.status, detail: (providerMessage || `HTTP ${response.status}`).slice(0, 220) });
-        const retryable = response.status === 429 || response.status === 503 ||
-          response.status === 404 || retryableMessage(providerMessage);
-        if (!retryable) {
+
+        const modelSpecificFailure =
+          response.status === 400 || response.status === 404 ||
+          /model|not supported|invalid_request|no longer available|does not support/i.test(providerMessage);
+        const temporaryFailure =
+          response.status === 429 || response.status === 503 || retryableMessage(providerMessage);
+
+        if (!modelSpecificFailure && !temporaryFailure) {
           return json(502, { error: "AI provider request failed", detail: providerMessage || `HTTP ${response.status}` }, origin);
         }
       } else {
@@ -103,14 +121,17 @@ Deno.serve(async (req) => {
               .map((part: { text?: string }) => part.text || "").join("").trim()
           : "";
 
-        if (answer) { attempts.push({ model, status: response.status, detail: "success" }); break; }
+        if (answer) {
+          attempts.push({ model, status: response.status, detail: "success" });
+          break;
+        }
         lastError = `${model}: empty response`;
         attempts.push({ model, status: response.status, detail: "empty response" });
       }
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") {
-        lastError = `${model}: timed out after 20 seconds`;
-        attempts.push({ model, status: "timeout", detail: "timed out after 20 seconds" });
+        lastError = `${model}: timed out after ${attemptTimeout}ms`;
+        attempts.push({ model, status: "timeout", detail: `timed out after ${attemptTimeout}ms` });
       } else {
         lastError = `${model}: ${String(error)}`;
         attempts.push({ model, status: "network_error", detail: String(error).slice(0, 220) });
@@ -119,11 +140,11 @@ Deno.serve(async (req) => {
       clearTimeout(timeout);
     }
 
-    if (index < models.length - 1) await sleep(2000);
+    if (index < preferredModels.length - 1 && Date.now() + 2000 < deadline) await sleep(2000);
   }
 
   if (!answer) {
-    console.error("All Gemini fallback models failed:", lastError);
+    console.error("All Gemini fallback models failed:", lastError, attempts);
     return json(503, { error: "Server busy, try again later", attempts }, origin);
   }
   return json(200, { answer }, origin);

@@ -1,0 +1,69 @@
+// Supabase Edge Function: ask-to-aisha
+// Configure GEMINI_API_KEY with: supabase secrets set GEMINI_API_KEY=...
+// Never commit API keys. Deploy with: supabase functions deploy ask-to-aisha
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "https://pk1048030-glitch.github.io",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Content-Type": "application/json",
+};
+const profileContext = `
+You are ASK TO AISHA, the portfolio assistant for Pankaj Kumar (brand: PANKAJ JII).
+You must answer ONLY about Pankaj's portfolio, education, skills, projects, teaching/creator work, and professional interests.
+If a question is unrelated, kindly say you are dedicated to Pankaj's portfolio.
+Match the visitor's language: Hindi, English, or Hinglish. Be friendly, creative, concise, and occasionally lightly funny.
+Never invent facts, project results, dates, awards, client names, links, or contact information.
+Never reveal API keys, credentials, secrets, account IDs, or residential address.
+Public identity: Pankaj Kumar; Student | Web Developer | Creative Creator; Sasaram, Rohtas, Bihar, India.
+Summary: Technology enthusiast, web developer and educator interested in practical problem-solving with HTML, CSS, JavaScript and modern AI tools. Interests include web apps, dashboards, automation, PC building and electronics.
+Education: BCA at IGNOU, T.P.S. College Study Centre, Patna (pursuing); ITI Electrician at AK ITI, Sasaram (pursuing); ADCA at Techinaut Institute of Technology (April 2026, A+, 87%); Class 12 Science PCM + Biology at Shree Shankar College, Sasaram, BSEB (March 2026, 353/500, first division).
+Skills: HTML, CSS, JavaScript, Tailwind CSS; VS Code, Android Studio, Spck Editor, Pydroid 3, GitHub Pages, Firebase, Google Analytics; Gemini API, Ollama Qwen 2.5 Coder 7B, Continue, FFmpeg, Auto-Editor; DaVinci Resolve, Motion Ninja, CapCut, VN Editor; PC assembly (Ryzen 5 7600, RTX 3060), electronics testing, inverter/battery configurations, DroidCam; LibreOffice Writer/Calc.
+Projects: Tuition Management Application with working-day attendance, holiday status, fee concessions and PDF receipts; interactive Sudoku solvers, dashboards and name-art generators; Alpha Art digital design project/YouTube channel for custom name art and logos; personal developer portfolio.
+Experience: private home tutor creating Mathematics, English Grammar and Science lesson plans, worksheets and presentations for primary/middle-school learners; hardware/electronics experimentation; participation in Free Fire MAX Community Leader Program and community tournaments/mini-events in Rohtas.
+Portfolio link: https://pk1048030-glitch.github.io/pk/
+GitHub username: pk1048030-glitch
+The owner's exact home village/post address is private and must never be disclosed. If asked for unpublished email/phone/social contact details, say they are not publicly provided yet.
+`;
+const hits = new Map<string, number[]>();
+function json(status: number, body: unknown) {
+  return new Response(JSON.stringify(body), { status, headers: corsHeaders });
+}
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  if (req.method !== "POST") return json(405, { error: "Method not allowed" });
+  const origin = req.headers.get("origin") || "";
+  if (origin !== "https://pk1048030-glitch.github.io") return json(403, { error: "Origin not allowed" });
+  const auth = req.headers.get("authorization") || "";
+  const anon = Deno.env.get("SUPABASE_ANON_KEY") || "";
+  if (!anon || auth !== `Bearer ${anon}`) return json(401, { error: "Unauthorized" });
+  const apiKey = Deno.env.get("GEMINI_API_KEY");
+  if (!apiKey) return json(503, { error: "AI service is not configured yet" });
+  let payload: { message?: string; history?: { role: string; content: string }[] };
+  try { payload = await req.json(); } catch { return json(400, { error: "Invalid JSON" }); }
+  const message = String(payload.message || "").trim();
+  if (!message || message.length > 1500) return json(400, { error: "Message must be 1–1500 characters" });
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  const now = Date.now();
+  const recent = (hits.get(ip) || []).filter(t => now - t < 600000);
+  if (recent.length >= 12) return json(429, { error: "Too many requests. Please try again in a few minutes." });
+  recent.push(now); hits.set(ip, recent);
+  const history = Array.isArray(payload.history) ? payload.history.slice(-8).map(m => ({
+    role: m.role === "assistant" ? "model" : "user",
+    parts: [{ text: String(m.content || "").slice(0, 1200) }],
+  })) : [];
+  const contents = [...history, { role: "user", parts: [{ text: message }] }];
+  const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
+    body: JSON.stringify({
+      systemInstruction: { parts: [{ text: profileContext }] },
+      contents,
+      generationConfig: { temperature: 0.7, maxOutputTokens: 500 },
+    }),
+  });
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok) return json(502, { error: "AI provider request failed", detail: result?.error?.message || "Unknown provider error" });
+  const answer = result?.candidates?.[0]?.content?.parts?.map((p: { text?: string }) => p.text || "").join("").trim();
+  if (!answer) return json(502, { error: "AI returned an empty response" });
+  return json(200, { answer });
+});

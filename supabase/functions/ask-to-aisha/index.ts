@@ -25,6 +25,55 @@ Portfolio link: https://pk1048030-glitch.github.io/pk/
 GitHub username: pk1048030-glitch
 The owner's exact home village/post address is private and must never be disclosed. If asked for unpublished email/phone/social contact details, say they are not publicly provided yet.
 `;
+
+function verifiedPortfolioFallback(message: string): string {
+  const q = message.toLowerCase();
+  const hi = /[\u0900-\u097f]/.test(message) || /\b(kya|kab|hai|hain|batao|padha|padhai)\b/.test(q);
+  if (/(address|home address|mobile|phone|email|contact|पता|फोन|नंबर|ईमेल)/.test(q)) {
+    return hi
+      ? "Pankaj की निजी संपर्क जानकारी और घर का पता सार्वजनिक नहीं हैं। आप पोर्टफोलियो के Contact Form से संदेश भेज सकते हैं।"
+      : "Pankaj's private contact details and home address are not published. You can use the portfolio contact form.";
+  }
+  if (/(adca|advanced diploma|एडीसीए)/.test(q)) {
+    return hi
+      ? "हाँ, Pankaj ने Techinaut Institute of Technology से ADCA अप्रैल 2026 में पूरा किया था। उन्हें A+ और 87% अंक मिले थे।"
+      : "Yes. Pankaj completed ADCA at Techinaut Institute of Technology in April 2026, earning an A+ grade with 87%.";
+  }
+  if (/(12th|class 12|intermediate|बारहवीं|12वीं)/.test(q)) {
+    return hi
+      ? "Pankaj ने मार्च 2026 में BSEB से कक्षा 12वीं (PCM और Biology) प्रथम श्रेणी में 353/500 अंकों के साथ पूरी की थी।"
+      : "Pankaj completed BSEB Class 12 (PCM and Biology) in March 2026, first division, with 353/500 marks.";
+  }
+  if (/(bca|ignou|degree|college|बीसीए)/.test(q)) {
+    return hi
+      ? "Pankaj IGNOU से BCA कर रहे हैं। उनका अध्ययन केंद्र T.P.S. College, Patna है।"
+      : "Pankaj is pursuing a BCA through IGNOU, with T.P.S. College, Patna as the study centre.";
+  }
+  if (/(iti|electrician|आईटीआई)/.test(q)) {
+    return hi
+      ? "Pankaj AK ITI, Sasaram में Electrician trade की पढ़ाई कर रहे हैं।"
+      : "Pankaj is pursuing the Electrician trade at AK ITI, Sasaram.";
+  }
+  if (/(skill|technology|tech stack|coding|programming|कौशल|स्किल|कोडिंग)/.test(q)) {
+    return hi
+      ? "Pankaj के कौशल में HTML, CSS, JavaScript, Tailwind CSS, Python, वेब डेवलपमेंट, वीडियो एडिटिंग और इलेक्ट्रॉनिक्स से जुड़े प्रयोग शामिल हैं।"
+      : "Pankaj works with HTML, CSS, JavaScript, Tailwind CSS, Python, web development, video editing and practical electronics projects.";
+  }
+  if (/(project|portfolio|application|app|प्रोजेक्ट|पोर्टफोलियो)/.test(q)) {
+    return hi
+      ? "उनके प्रोजेक्ट्स में Tuition Management Application, Interactive Web Tools, Alpha Art और PANKAJ JII personal portfolio शामिल हैं।"
+      : "His projects include a Tuition Management Application, Interactive Web Tools, Alpha Art and the PANKAJ JII personal portfolio.";
+  }
+  if (/(pankaj|about|who|परिचय|कौन|पंकज)/.test(q)) {
+    return hi
+      ? "Pankaj Kumar, Sasaram (Bihar) के Student, Web Developer और Creative Creator हैं। उन्हें बचपन से इलेक्ट्रॉनिक्स और टेक्नोलॉजी में रुचि है।"
+      : "Pankaj Kumar is a student, web developer and creative creator from Sasaram, Bihar, with a long-standing interest in electronics and technology.";
+  }
+  return hi
+    ? "मैं फिलहाल PANKAJ JII पोर्टफोलियो की प्रमाणित जानकारी दे सकती हूँ। आप उनके प्रोजेक्ट्स, शिक्षा या कौशल के बारे में पूछ सकते हैं।"
+    : "I can currently share verified PANKAJ JII portfolio facts. Ask about his projects, education or skills.";
+}
+
 const hits = new Map<string, number[]>();
 function json(status: number, body: unknown, origin = "") {
   const headers: Record<string, string> = { ...corsHeaders };
@@ -63,15 +112,11 @@ Deno.serve(async (req) => {
   const preferredModels = [
     "gemini-3.8-flash",
     "gemini-3.7-flash",
-    "gemini-3.6-flash",
-    "gemini-3.5-flash",
-    "gemini-3.5-flash-lite",
-    "gemini-3.1-flash-lite",
   ];
   const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
   const retryableMessage = (message: string) =>
     /high demand|rate limit|too many requests|unavailable|temporar|overload|resource exhausted|quota/i.test(message);
-  const deadline = Date.now() + 115000;
+  const deadline = Date.now() + 21000;
 
   let answer = "";
   let lastError = "";
@@ -81,7 +126,7 @@ Deno.serve(async (req) => {
     if (Date.now() >= deadline) break;
     const model = preferredModels[index];
     const remaining = deadline - Date.now();
-    const attemptTimeout = Math.max(3000, Math.min(15000, remaining - 1000));
+    const attemptTimeout = Math.max(3000, Math.min(9000, remaining - 1000));
     if (attemptTimeout < 3000) break;
 
     const controller = new AbortController();
@@ -116,7 +161,7 @@ Deno.serve(async (req) => {
 
         if (!modelSpecificFailure && !temporaryFailure) {
           console.error("Non-retryable provider response", response.status, providerMessage);
-          return json(502, { error: "AI provider request failed" }, origin);
+          return json(200, { answer: verifiedPortfolioFallback(message), mode: "verified_fallback" }, origin);
         }
       } else {
         answer = Array.isArray(result?.steps)
@@ -145,12 +190,12 @@ Deno.serve(async (req) => {
       clearTimeout(timeout);
     }
 
-    if (index < preferredModels.length - 1 && Date.now() + 2000 < deadline) await sleep(2000);
+    if (index < preferredModels.length - 1 && Date.now() + 700 < deadline) await sleep(700);
   }
 
   if (!answer) {
     console.error("All Gemini fallback models failed:", lastError, attempts);
-    return json(503, { error: "Server busy, try again later" }, origin);
+    return json(200, { answer: verifiedPortfolioFallback(message), mode: "verified_fallback" }, origin);
   }
   return json(200, { answer }, origin);
 });

@@ -30,15 +30,20 @@ async function run() {
   assert.equal(forbidden.status,403,'Untrusted origin must be denied');
   const invalid = await request('submit-contact','POST',{name:'QA',email:'invalid',message:'hello'});
   assert.equal(invalid.status,400,'Malformed contact must be rejected');
-  const email = 'portfolio-smoke-' + (process.env.GITHUB_RUN_ID || Date.now()) + '@example.invalid';
-  console.log('QA_EMAIL=' + email);
-  const qa = {name:'Portfolio CI QA',email,subject:'Automated integration smoke test',
-    message:'Automated test message for integration validation. This record will be removed after the test.',website:''};
-  const good = await request('submit-contact','POST',qa);
-  assert.equal(good.status,200,'Valid contact submission must succeed');
-  assert.equal(good.body.ok,true,'Expected contact success');
-  const repeated = await request('submit-contact','POST',qa);
-  assert.equal(repeated.status,429,'Repeated contact must be throttled');
+  // Mutating smoke checks are opt-in because they create an inbox record.
+  if (process.env.RUN_CONTACT_WRITE_SMOKE === 'true') {
+    const email = 'portfolio-smoke-' + (process.env.GITHUB_RUN_ID || Date.now()) + '@example.invalid';
+    console.log('QA_EMAIL=' + email);
+    const qa = {name:'Portfolio CI QA',email,subject:'Automated integration smoke test',
+      message:'Automated test message for integration validation. Delete this test message after the test.',website:''};
+    const good = await request('submit-contact','POST',qa);
+    assert.equal(good.status,200,'Valid contact submission must succeed');
+    assert.equal(good.body.ok,true,'Expected contact success');
+    const repeated = await request('submit-contact','POST',qa);
+    assert.equal(repeated.status,429,'Repeated contact must be throttled');
+  } else {
+    console.log('Contact write test skipped (live success verified in run #43266774496, attempt 2)');
+  }
   const ai = await request('ask-to-aisha','POST',{message:'Did Pankaj complete ADCA, and when?',history:[]});
   assert.equal(ai.status,200,'AI chat must respond successfully');
   assert.equal(typeof ai.body.answer,'string','AI response missing answer');

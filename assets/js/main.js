@@ -11,3 +11,22 @@ $$('.filter').forEach(btn=>btn.addEventListener('click',()=>{$$('.filter').forEa
 $('#menuToggle').addEventListener('click',()=>document.body.classList.toggle('menu-open'));$$('.desktop-nav a').forEach(a=>a.addEventListener('click',()=>document.body.classList.remove('menu-open')));
 const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('visible');observer.unobserve(entry.target)}}),{threshold:.12});$$('.reveal').forEach(el=>observer.observe(el));
 // The contact email and project cards are intentional demo placeholders until Pankaj adds verified details.
+
+async function connectPortfolioData(){
+ if(!window.supabase||!window.PJ_SUPABASE_URL||!window.PJ_SUPABASE_ANON_KEY)return;
+ const db=window.supabase.createClient(window.PJ_SUPABASE_URL,window.PJ_SUPABASE_ANON_KEY);
+ const safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const [profile,skills,projects,socials]=await Promise.all([
+  db.from('profile').select('*').order('updated_at',{ascending:false}).limit(1).maybeSingle(),
+  db.from('skills').select('*').eq('visible',true).order('sort_order'),
+  db.from('projects').select('*').eq('published',true).order('sort_order'),
+  db.from('social_links').select('*').eq('visible',true).order('sort_order')
+ ]);
+ if(profile.data){const p=profile.data;const hero=$('.hero h1');if(hero)hero.innerHTML=safe(p.display_name||'Pankaj Kumar').replace(' ','<br><span class="gradient-text">')+'</span>';const role=$('.hero h2');if(role)role.textContent=p.professional_title||'Student | Web Developer | Creative Creator';const loc=$('.hero-meta span');if(loc&&p.location)loc.textContent='⌖ '+p.location+', India';const quote=$('.about-note p');if(quote&&p.about_hi&&lang==='hi')quote.textContent=p.about_hi;else if(quote&&p.about_en)quote.textContent=p.about_en;const resumeName=$('.resume-copy h3');if(resumeName)resumeName.textContent=p.display_name||'Pankaj Kumar';}
+ if(skills.data?.length){const grid=$('.skill-grid');if(grid)grid.innerHTML=skills.data.map((s,i)=>'<div class="skill-card reveal"><span>'+String(i+1).padStart(2,'0')+'</span><b>'+safe(s.name)+'</b><small>'+safe(s.category).toUpperCase()+'</small></div>').join('');}
+ if(projects.data?.length){const grid=$('#projectGrid');if(grid){grid.innerHTML=projects.data.map((p,i)=>'<article class="project-card reveal" data-category="'+safe(p.category)+'"><div class="project-visual visual-blue"><span>'+String(i+1).padStart(2,'0')+' / '+safe(p.category).toUpperCase()+'</span><strong>'+safe(p.title)+'</strong><i>↗</i></div><div class="project-info"><div><h3>'+safe(p.title)+'</h3><p>'+safe((lang==='hi'?(p.summary_hi||p.summary_en):(p.summary_en||p.summary_hi))||'')+'</p></div>'+(p.project_url?'<a class="project-tag" href="'+safe(p.project_url)+'" target="_blank" rel="noopener" data-project-event="'+safe(p.id)+'">DEMO ↗</a>':'')+'</div></article>').join('');grid.querySelectorAll('.reveal').forEach(el=>observer.observe(el));grid.querySelectorAll('[data-project-event]').forEach(a=>a.addEventListener('click',()=>recordEvent(db,'project_click',location.pathname,a.dataset.projectEvent)))}}
+ if(socials.data?.length){const grid=$('.social-grid');if(grid)grid.innerHTML=socials.data.map(s=>'<a class="social-card" href="'+safe(s.url)+'" target="_blank" rel="noopener"><b>'+safe(s.platform)+'</b><span>Visit profile</span><small>OPEN ↗</small></a>').join('');}
+ const form=$('#publicContactForm');if(form)form.addEventListener('submit',async e=>{e.preventDefault();const status=$('#contactFormStatus'),data=new FormData(form);status.textContent='Sending…';const {error}=await db.from('contact_messages').insert({name:String(data.get('name')).trim(),email:String(data.get('email')).trim(),subject:String(data.get('subject')||'').trim()||null,message:String(data.get('message')).trim()});status.textContent=error?'Could not send: '+error.message:'Message sent successfully. Thank you!';if(!error)form.reset();});
+}
+async function recordEvent(db,eventName,pagePath,projectId){try{await db.from('site_events').insert({event_name:eventName,page_path:pagePath,project_id:projectId||null,referrer_host:document.referrer?new URL(document.referrer).host:null})}catch(_){}}
+connectPortfolioData();

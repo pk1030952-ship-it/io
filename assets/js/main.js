@@ -8,7 +8,7 @@ let lang=localStorage.getItem('pj-language')||'en';
 function setLanguage(next){lang=next;localStorage.setItem('pj-language',lang);document.documentElement.lang=lang==='hi'?'hi':'en';$$('[data-i18n]').forEach(el=>{const value=translations[lang][el.dataset.i18n];if(value)el.innerHTML=value});$('#languageToggle').textContent=lang==='en'?'हि':'EN'}
 $('#languageToggle').addEventListener('click',()=>setLanguage(lang==='en'?'hi':'en'));setLanguage(lang);
 $$('.filter').forEach(btn=>btn.addEventListener('click',()=>{$$('.filter').forEach(b=>b.classList.remove('active'));btn.classList.add('active');const filter=btn.dataset.filter;$$('.project-card').forEach(card=>card.classList.toggle('hidden',filter!=='all'&&card.dataset.category!==filter))}));
-$('#menuToggle').addEventListener('click',()=>{const open=document.body.classList.toggle('menu-open');$('#menuToggle').setAttribute('aria-expanded',String(open))});$('.desktop-nav a').forEach(a=>a.addEventListener('click',()=>{document.body.classList.remove('menu-open');$('#menuToggle').setAttribute('aria-expanded','false')}));
+$('#menuToggle').addEventListener('click',()=>{const open=document.body.classList.toggle('menu-open');$('#menuToggle').setAttribute('aria-expanded',String(open))});$$('.desktop-nav a').forEach(a=>a.addEventListener('click',()=>{document.body.classList.remove('menu-open');$('#menuToggle').setAttribute('aria-expanded','false')}));
 const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('visible');observer.unobserve(entry.target)}}),{threshold:.12});$$('.reveal').forEach(el=>observer.observe(el));
 // The contact email and project cards are intentional demo placeholders until Pankaj adds verified details.
 

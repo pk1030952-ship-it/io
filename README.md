@@ -14,14 +14,14 @@ The development branch is ready for final acceptance testing, but it is **not pr
 - Project/skill/social management and contact inbox
 - Resume/profile-photo upload flow with `portfolio-assets` Storage policies
 - Visitor opt-in analytics with admin reporting
-- Public contact form with database validation plus browser honeypot/cooldown
+- Public contact form routed through a protected Supabase Edge Function with transaction-safe database rate limiting, plus browser honeypot/cooldown
 - ASK TO AISHA via Supabase Edge Function with server-side Gemini secret and bounded model fallback
 - SEO metadata, keyboard focus treatment and reduced-motion support
 
 ### Remaining before production launch
 - Deploy latest Edge Function revision and test chat on the final Pages origin
 - Add or intentionally omit real profile photo, resume, contact details, social URLs and verified project links
-- Add durable server-side abuse/rate limiting for public contact/AI endpoints
+- Run final end-to-end browser contact/chat tests and review stronger bot protection/usage caps for public endpoints
 - Decide analytics retention policy
 - Complete mobile/browser/accessibility/security acceptance testing
 - Merge the development PR to `main`, enable GitHub Pages and verify the live URL

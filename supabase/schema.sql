@@ -41,6 +41,7 @@ create table if not exists public.site_events (
  page_path text, project_id uuid references public.projects(id) on delete set null,
  referrer_host text, created_at timestamptz not null default now()
 );
+create index if not exists site_events_project_id_idx on public.site_events (project_id);
 
 create schema if not exists app_private;
 revoke all on schema app_private from public;
@@ -67,23 +68,39 @@ for select to authenticated using (app_private.is_admin());
 
 create policy "Public read profile" on public.profile
 for select to anon, authenticated using (true);
-create policy "Admins manage profile" on public.profile
-for all to authenticated using (app_private.is_admin()) with check (app_private.is_admin());
+create policy "Admins insert profile" on public.profile
+for insert to authenticated with check (app_private.is_admin());
+create policy "Admins update profile" on public.profile
+for update to authenticated using (app_private.is_admin()) with check (app_private.is_admin());
+create policy "Admins delete profile" on public.profile
+for delete to authenticated using (app_private.is_admin());
 
 create policy "Public read visible skills" on public.skills
 for select to anon, authenticated using (visible or app_private.is_admin());
-create policy "Admins manage skills" on public.skills
-for all to authenticated using (app_private.is_admin()) with check (app_private.is_admin());
+create policy "Admins insert skills" on public.skills
+for insert to authenticated with check (app_private.is_admin());
+create policy "Admins update skills" on public.skills
+for update to authenticated using (app_private.is_admin()) with check (app_private.is_admin());
+create policy "Admins delete skills" on public.skills
+for delete to authenticated using (app_private.is_admin());
 
 create policy "Public read published projects" on public.projects
 for select to anon, authenticated using (published or app_private.is_admin());
-create policy "Admins manage projects" on public.projects
-for all to authenticated using (app_private.is_admin()) with check (app_private.is_admin());
+create policy "Admins insert projects" on public.projects
+for insert to authenticated with check (app_private.is_admin());
+create policy "Admins update projects" on public.projects
+for update to authenticated using (app_private.is_admin()) with check (app_private.is_admin());
+create policy "Admins delete projects" on public.projects
+for delete to authenticated using (app_private.is_admin());
 
 create policy "Public read visible socials" on public.social_links
 for select to anon, authenticated using (visible or app_private.is_admin());
-create policy "Admins manage socials" on public.social_links
-for all to authenticated using (app_private.is_admin()) with check (app_private.is_admin());
+create policy "Admins insert socials" on public.social_links
+for insert to authenticated with check (app_private.is_admin());
+create policy "Admins update socials" on public.social_links
+for update to authenticated using (app_private.is_admin()) with check (app_private.is_admin());
+create policy "Admins delete socials" on public.social_links
+for delete to authenticated using (app_private.is_admin());
 
 create policy "Public submit contact message" on public.contact_messages
 for insert to anon, authenticated with check (

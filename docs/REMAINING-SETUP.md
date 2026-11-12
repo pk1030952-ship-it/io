@@ -13,14 +13,14 @@ Repository implementation is substantially complete. Items below require live en
 ## Publishing status
 - GitHub Pages was manually unpublished, and the owner selected `None` for the publishing branch on 12 November 2026. Do not select a publishing branch again before final acceptance.
 - Draft PR #2 is mergeable and its static CI checks have passed; it is **not merged**.
-- Supabase connector has been suggested but must be explicitly connected before direct live SQL/function deployment. No new Edge Function or SQL change has been applied to Supabase during this review.
+- Supabase connector is now connected and the live Edge Function is deployed; read-only database checks and a focused RLS-helper security migration have been completed.
 
 ## Verified live Supabase deployment (12 November 2026)
 - The connected Supabase project was verified `ACTIVE_HEALTHY`.
 - `ask-to-aisha` Edge Function was updated from version 4 to version 5 with the development branch source.
 - Retrieved deployed version 5 and checked CORS preflight restriction, non-sensitive visitor errors and completed-ADCA factual context.
-- Database contact and analytics policies were inspected read-only. No live schema changes were applied.
-- Security advisor flags `public.is_admin()` as directly executable through the public RPC endpoint by anonymous/authenticated roles. This is a review item; do not revoke execution blindly because existing RLS policies call the function.
+- Database contact and analytics policies were inspected; the `is_admin()` SECURITY DEFINER helper was moved (preserving its RLS/Storage policy references) into non-exposed `app_private` schema using the connected Supabase migration action.
+- The security advisor was rerun and the two public-Security-Definer warnings are resolved. The remaining warning is leaked-password protection disabled.
 - Supabase Auth leaked-password protection is disabled (security advisor warning). Review available Auth settings before launch.
 - Actual chatbot provider response on the new deployment and complete browser acceptance testing remain pending.
 

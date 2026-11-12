@@ -82,3 +82,15 @@ This is the working checklist for the portfolio. A checked item means implemente
 
 ## Important
 Do not publish placeholders as real contact links or claim unfinished backend features are working. Never commit passwords, Supabase service-role keys or AI API secrets.
+
+
+## Phase 4 — ASK TO AISHA
+- [x] Add portfolio-only assistant knowledge draft
+- [x] Add Gemini-backed Supabase Edge Function source (secret key stays server-side)
+- [x] Add floating text-chat UI and invoke the Edge Function
+- [x] Add origin allowlist, request length limit, and best-effort per-instance throttling
+- [ ] Revoke the API key exposed in chat and create a replacement with the provider
+- [ ] Set GEMINI_API_KEY and PORTFOLIO_PUBLISHABLE_KEY in Supabase Edge Function secrets
+- [ ] Deploy the Edge Function and verify provider/model access
+- [ ] Implement durable rate limiting, monitoring, and usage/spend controls before public launch
+- [ ] End-to-end browser test on the actual GitHub Pages origin

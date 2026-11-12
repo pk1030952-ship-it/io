@@ -10,3 +10,7 @@
 .social-card:hover{transform:translateY(-4px);border-color:#54c8ff70}
 .social-card b{font:600 17px 'Space Grotesk'}.social-card span{font-size:11px;color:var(--muted)}.social-card small{font-size:8px;letter-spacing:1.2px;color:#d8ad59;margin-top:7px}
 @media(max-width:600px){.resume-panel{align-items:flex-start;flex-wrap:wrap;padding:20px}.resume-mark{width:60px;height:60px;flex-basis:60px}.resume-copy{min-width:calc(100% - 90px)}.resume-status{margin-left:0}.social-grid{grid-template-columns:repeat(2,1fr)}}
+
+
+/* Accessibility */
+.skip-link{position:fixed;left:1rem;top:-5rem;z-index:9999;padding:.7rem 1rem;background:var(--surface,#111827);color:inherit;border:1px solid var(--line,#334155);border-radius:10px;text-decoration:none}.skip-link:focus{top:1rem}a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid currentColor;outline-offset:3px}@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto!important}*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}.loader{display:none!important}}

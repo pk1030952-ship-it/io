@@ -4,4 +4,4 @@
    Never place a service_role or sb_secret key in this file.
 */
 window.PJ_SUPABASE_URL = 'https://wffimpbtcbevbblbbtez.supabase.co';
-window.PJ_SUPABASE_ANON_KEY = 'sb_publishable_waEll8YSNiXxJqWMxTdejg_NgIqz92';
+window.PJ_SUPABASE_ANON_KEY = 'sb_publishable_waEll8YSNiXxJqWMxTdejg_NgIqz92Z';

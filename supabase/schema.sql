@@ -42,11 +42,17 @@ create table if not exists public.site_events (
  referrer_host text, created_at timestamptz not null default now()
 );
 
-create or replace function public.is_admin()
+create schema if not exists app_private;
+revoke all on schema app_private from public;
+grant usage on schema app_private to anon, authenticated;
+
+create or replace function app_private.is_admin()
 returns boolean language sql stable security definer set search_path = ''
 as $$
  select exists(select 1 from public.admin_users au where au.user_id = (select auth.uid()));
-$$;
+$;
+revoke all on function app_private.is_admin() from public;
+grant execute on function app_private.is_admin() to anon, authenticated;
 
 alter table public.admin_users enable row level security;
 alter table public.profile enable row level security;
@@ -57,27 +63,27 @@ alter table public.contact_messages enable row level security;
 alter table public.site_events enable row level security;
 
 create policy "Admins read admin roster" on public.admin_users
-for select to authenticated using (public.is_admin());
+for select to authenticated using (app_private.is_admin());
 
 create policy "Public read profile" on public.profile
 for select to anon, authenticated using (true);
 create policy "Admins manage profile" on public.profile
-for all to authenticated using (public.is_admin()) with check (public.is_admin());
+for all to authenticated using (app_private.is_admin()) with check (app_private.is_admin());
 
 create policy "Public read visible skills" on public.skills
-for select to anon, authenticated using (visible or public.is_admin());
+for select to anon, authenticated using (visible or app_private.is_admin());
 create policy "Admins manage skills" on public.skills
-for all to authenticated using (public.is_admin()) with check (public.is_admin());
+for all to authenticated using (app_private.is_admin()) with check (app_private.is_admin());
 
 create policy "Public read published projects" on public.projects
-for select to anon, authenticated using (published or public.is_admin());
+for select to anon, authenticated using (published or app_private.is_admin());
 create policy "Admins manage projects" on public.projects
-for all to authenticated using (public.is_admin()) with check (public.is_admin());
+for all to authenticated using (app_private.is_admin()) with check (app_private.is_admin());
 
 create policy "Public read visible socials" on public.social_links
-for select to anon, authenticated using (visible or public.is_admin());
+for select to anon, authenticated using (visible or app_private.is_admin());
 create policy "Admins manage socials" on public.social_links
-for all to authenticated using (public.is_admin()) with check (public.is_admin());
+for all to authenticated using (app_private.is_admin()) with check (app_private.is_admin());
 
 create policy "Public submit contact message" on public.contact_messages
 for insert to anon, authenticated with check (
@@ -86,11 +92,11 @@ for insert to anon, authenticated with check (
  and length(trim(message)) between 1 and 5000
 );
 create policy "Admins read messages" on public.contact_messages
-for select to authenticated using (public.is_admin());
+for select to authenticated using (app_private.is_admin());
 create policy "Admins update messages" on public.contact_messages
-for update to authenticated using (public.is_admin()) with check (public.is_admin());
+for update to authenticated using (app_private.is_admin()) with check (app_private.is_admin());
 create policy "Admins delete messages" on public.contact_messages
-for delete to authenticated using (public.is_admin());
+for delete to authenticated using (app_private.is_admin());
 
 create policy "Visitors record events" on public.site_events
 for insert to anon, authenticated with check (
@@ -99,17 +105,17 @@ for insert to anon, authenticated with check (
  and (referrer_host is null or length(referrer_host) <= 200)
 );
 create policy "Admins read events" on public.site_events
-for select to authenticated using (public.is_admin());
+for select to authenticated using (app_private.is_admin());
 create policy "Admins delete events" on public.site_events
-for delete to authenticated using (public.is_admin());
+for delete to authenticated using (app_private.is_admin());
 
 -- Add the first admin_users row manually in Supabase SQL Editor using a trusted auth.users UUID.
 -- Never create a public INSERT policy for admin_users.
 -- Configure Storage buckets/policies and edge rate limiting before production.
 
 
--- Optional analytics retention helper. Admin-only; call manually or from a trusted scheduler.
-create or replace function public.cleanup_old_site_events(retention_days integer default 90)
+-- Optional analytics retention helper: private-schema, admin-only. Call with an authorized role or trusted scheduler.
+create or replace function app_private.cleanup_old_site_events(retention_days integer default 90)
 returns bigint
 language plpgsql
 security definer
@@ -117,7 +123,7 @@ set search_path = ''
 as $$
 declare deleted_count bigint;
 begin
-  if not public.is_admin() then
+  if not app_private.is_admin() then
     raise exception 'not authorized';
   end if;
   if retention_days < 7 or retention_days > 3650 then
@@ -128,5 +134,5 @@ begin
   return deleted_count;
 end;
 $$;
-revoke all on function public.cleanup_old_site_events(integer) from public, anon;
-grant execute on function public.cleanup_old_site_events(integer) to authenticated;
+revoke all on function app_private.cleanup_old_site_events(integer) from public, anon;
+grant execute on function app_private.cleanup_old_site_events(integer) to authenticated;

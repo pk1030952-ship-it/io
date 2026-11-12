@@ -21,6 +21,10 @@ Repository implementation is substantially complete. Items below require live en
 - Retrieved deployed version 5 and checked CORS preflight restriction, non-sensitive visitor errors and completed-ADCA factual context.
 - Database contact and analytics policies were inspected; the `is_admin()` SECURITY DEFINER helper was moved (preserving its RLS/Storage policy references) into non-exposed `app_private` schema using the connected Supabase migration action.
 - The security advisor was rerun and the two public-Security-Definer warnings are resolved. The remaining warning is leaked-password protection disabled.
+- A second focused migration added an index to `public.site_events(project_id)` and replaced redundant `FOR ALL` content RLS policies with separate admin INSERT/UPDATE/DELETE policies; the existing SELECT permissions are unchanged.
+- Security advisors now show only leaked-password protection disabled; performance advisor shows one newly created, not-yet-used event index and no missing-index or multiple-permissive-policy warnings.
+- Anonymous-role SQL test confirmed `app_private.is_admin()` is false and anonymous SELECT can see zero admin roster rows and zero contact message rows.
+- GitHub SQL starter files have been synchronized with these live migrations.
 - Supabase Auth leaked-password protection is disabled (security advisor warning). Review available Auth settings before launch.
 - Actual chatbot provider response on the new deployment and complete browser acceptance testing remain pending.
 

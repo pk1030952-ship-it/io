@@ -30,7 +30,7 @@ This is the working checklist for the portfolio. A checked item means implemente
 - [x] Apply table RLS policies; Storage policies remain pending
 - [ ] Configure auth providers and redirect URLs
 - [x] Seed trusted admin account securely
-- [x] Connect public profile, skills, projects and social links to Supabase
+- [x] Connect public profile, skills, projects and social links to Supabase; uploaded photo/resume render on public page
 - [x] Connect contact message form and admin inbox; file storage remains pending
 - [ ] Add server-side validation and rate limiting
 
@@ -40,7 +40,7 @@ This is the working checklist for the portfolio. A checked item means implemente
 - [x] Admin profile editor (Supabase-backed; public-page rendering still pending)
 - [x] Project CRUD and featured-project management UI (requires configured Supabase)
 - [x] Skills and social links management
-- [ ] Resume/photo upload and replacement
+- [x] Resume/photo upload UI and Supabase Storage integration (requires storage-setup.sql to be run)
 - [x] Contact inbox (read/archive)
 - [x] Public content loads from Supabase on page load; realtime subscriptions pending
 - [ ] Safe code-editing workflow (no arbitrary unauthenticated code execution)
@@ -54,10 +54,10 @@ This is the working checklist for the portfolio. A checked item means implemente
 - [ ] Test prompt injection, privacy and rate limits
 
 ## Phase 5 — Analytics
-- [ ] Define privacy-conscious event model
-- [ ] Track page views, popular pages, project clicks and traffic source
-- [ ] Admin analytics dashboard and date filters
-- [ ] Consent/privacy notice as appropriate
+- [x] Define basic event model (page_view and project_click; consent and retention policy still pending)
+- [x] Track page views and project clicks; referrer host is captured when available
+- [x] Admin analytics dashboard with 7/30/90-day filters
+- [ ] Add visitor analytics consent/privacy notice and retention controls
 
 ## Phase 6 — Quality and launch
 - [ ] Browser/device testing

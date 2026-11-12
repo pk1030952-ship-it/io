@@ -106,3 +106,27 @@ for delete to authenticated using (public.is_admin());
 -- Add the first admin_users row manually in Supabase SQL Editor using a trusted auth.users UUID.
 -- Never create a public INSERT policy for admin_users.
 -- Configure Storage buckets/policies and edge rate limiting before production.
+
+
+-- Optional analytics retention helper. Admin-only; call manually or from a trusted scheduler.
+create or replace function public.cleanup_old_site_events(retention_days integer default 90)
+returns bigint
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare deleted_count bigint;
+begin
+  if not public.is_admin() then
+    raise exception 'not authorized';
+  end if;
+  if retention_days < 7 or retention_days > 3650 then
+    raise exception 'retention_days must be between 7 and 3650';
+  end if;
+  delete from public.site_events where created_at < now() - make_interval(days => retention_days);
+  get diagnostics deleted_count = row_count;
+  return deleted_count;
+end;
+$$;
+revoke all on function public.cleanup_old_site_events(integer) from public, anon;
+grant execute on function public.cleanup_old_site_events(integer) to authenticated;

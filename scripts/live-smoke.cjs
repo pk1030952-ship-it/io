@@ -24,6 +24,14 @@ async function request(slug, method='POST', body=undefined, extraHeaders={}) {
   return {status:res.status,body:parsed};
 }
 async function run() {
+  try {
+    const pages = await fetch('https://pk1030952-ship-it.github.io/io/', {
+      redirect:'manual',signal:AbortSignal.timeout(12000)
+    });
+    console.log('PUBLIC_PAGES_HTTP=' + pages.status);
+  } catch (error) {
+    console.log('PUBLIC_PAGES_PROBE_UNAVAILABLE=' + String(error?.message || error).slice(0,120));
+  }
   const preflight = await request('submit-contact','OPTIONS');
   assert.equal(preflight.status,204,'Contact CORS preflight must allow the final site');
   const forbidden = await request('submit-contact','OPTIONS',undefined,{origin:'https://not-allowed.example'});

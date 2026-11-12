@@ -1,59 +1,40 @@
 # PANKAJ JII — Personal Portfolio
 
-A responsive personal portfolio for Pankaj Kumar, with a futuristic black, neon-blue and purple visual identity.
+Responsive personal portfolio for Pankaj Kumar with a Supabase-backed admin dashboard, dynamic content, privacy-conscious analytics, asset uploads, contact inbox and ASK TO AISHA.
 
 ## Current status
 
-This branch is an **in-progress frontend foundation**, not the finished production website.
+The development branch is ready for final acceptance testing, but it is **not production-approved yet**. Do not treat placeholders as verified public information.
 
 ### Implemented
-- Home, About, Skills, Projects, Education and Contact sections
-- Responsive desktop/mobile layout
-- English/Hindi language toggle (browser local storage)
-- Dark/light theme toggle (browser local storage)
-- Project category filters
-- Loading screen and scroll-reveal animations
-- Custom PJ favicon
+- Home, About, Skills, Projects, Education, Resume, Social and Contact sections
+- Responsive layout, Hindi/English toggle, dark/light theme and project filters
+- Supabase profile, project, skill and social content loading
+- Admin authentication with database-enforced admin authorization
+- Project/skill/social management and contact inbox
+- Resume/profile-photo upload flow with `portfolio-assets` Storage policies
+- Visitor opt-in analytics with admin reporting
+- Public contact form with database validation plus browser honeypot/cooldown
+- ASK TO AISHA via Supabase Edge Function with server-side Gemini secret and bounded model fallback
+- SEO metadata, keyboard focus treatment and reduced-motion support
 
-### Remaining before final launch
-- Verified project entries, real profile photo, resume and public contact details
-- Dedicated Resume section and downloadable resume asset
-- Working contact form with Supabase storage and server-side validation
-- Supabase database, admin authentication, role-based access and storage policies
-- Admin dashboard for profile, projects, resume, messages and settings
-- Privacy-conscious analytics
-- ASK TO AISHA portfolio-only assistant with secure server-side AI integration
-- Ambient sound opt-in, accessibility/performance/security review
-- GitHub Pages deployment and future custom domain
+### Remaining before production launch
+- Deploy latest Edge Function revision and test chat on the final Pages origin
+- Add or intentionally omit real profile photo, resume, contact details, social URLs and verified project links
+- Add durable server-side abuse/rate limiting for public contact/AI endpoints
+- Decide analytics retention policy
+- Complete mobile/browser/accessibility/security acceptance testing
+- Merge the development PR to `main`, enable GitHub Pages and verify the live URL
 
-## Structure
-
-```text
-.
-├── index.html
-├── assets/css/style.css
-├── assets/js/main.js
-├── assets/images/favicon.svg
-├── supabase/schema.sql
-└── README.md
-```
-
-## Run locally
-
-No build step is currently required. Clone the repository and open `index.html` in a browser, or use a local static server such as VS Code Live Server.
-
-## Demo content
-
-Project cards and contact details are placeholders. Replace them with verified information before publishing.
+## Security
+- Never commit Supabase secret/service-role keys, Gemini API keys, passwords or private credentials.
+- Browser code uses only a Supabase publishable key; Row Level Security protects data.
+- Admin authorization is enforced in Supabase, not by hiding frontend controls.
+- AI provider credentials stay in Supabase Edge Function secrets.
+- Exact residential address is intentionally excluded from public portfolio/AI knowledge.
 
 ## Development branch
 
 `feature/pankaj-jii-portfolio-v1`
 
-The production `main` branch is intentionally kept unchanged until all requirements are implemented and reviewed.
-
-## Security
-- Never commit Supabase service-role keys, AI secrets, passwords or private credentials.
-- Browser code may use only a publishable/anon key with correct Row Level Security.
-- Enforce admin permissions in the database/backend, not by hiding frontend controls.
-- Route AI requests through a secure server-side function.
+Production remains on `main` until final acceptance is complete.

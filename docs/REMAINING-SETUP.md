@@ -1,36 +1,25 @@
-# PANKAJ JII — Remaining setup before live testing
+# PANKAJ JII — Final launch checklist
 
-The feature branch contains the Admin managers, public Supabase content loading, contact inbox/form, analytics and asset upload code. These commits are not merged to `main` and are not the production website yet.
+Repository implementation is substantially complete. Items below require live environment verification, owner-approved content, or production operations.
 
-## 1. Enable Storage for profile photo and resume
+## Already verified
+- Supabase database tables and RLS are configured.
+- `portfolio-assets` bucket exists with public read and admin-only write/update/delete policies.
+- Approved admin authentication works.
+- ASK TO AISHA Edge Function has returned a successful live Gemini response.
+- Gemini/provider secrets are stored server-side in Supabase, not browser code.
+- Analytics requires visitor opt-in before events are sent.
 
-1. Open the Supabase project used by this portfolio.
-2. Open SQL Editor.
-3. Open `supabase/storage-setup.sql` from this repository and run the complete script.
-4. Confirm a public bucket named `portfolio-assets` exists.
-5. Do not use a Supabase secret/service-role key in browser code.
+## Required before merging to main
+1. Deploy the latest `supabase/functions/ask-to-aisha/index.ts` revision in Supabase.
+2. Test ASK TO AISHA from the final GitHub Pages origin.
+3. Test admin login, project/skill/social CRUD, contact inbox, resume upload and profile-photo upload.
+4. Test public contact form and confirm the message reaches the admin inbox.
+5. Add real resume/photo/contact/social/project data, or intentionally leave each unavailable item unpublished.
+6. Add durable server-side abuse protection/rate limiting for public contact submissions and monitor AI usage.
+7. Define an analytics retention period and periodically delete older events.
+8. Complete keyboard, screen-reader, mobile and major-browser acceptance testing.
+9. Review the draft PR, merge to `main`, enable GitHub Pages and verify the production URL.
 
-The script allows public read access to files in this bucket, but only authenticated users listed in `public.admin_users` can upload, update or delete files.
-
-## 2. Test the Admin dashboard on the feature branch
-
-After the feature branch is deployed to a staging URL:
-- Sign in with the approved admin account.
-- Add, hide/show and delete a skill.
-- Add, hide/show and delete a social profile URL.
-- Send a test contact message from the public page and verify it appears in the inbox.
-- Upload a PDF resume and a JPG/PNG/WebP profile image.
-- Check analytics after visiting the public page and clicking a project link.
-
-## 3. Still requires external setup or owner-provided information
-
-- ASK TO AISHA needs a server-side AI endpoint and a provider API secret stored only as a server/Edge Function secret. Never add this secret to GitHub Pages/browser JavaScript.
-- Public email/phone/WhatsApp and real social URLs must be confirmed by the owner.
-- Real resume, profile photo, and verified project details must be supplied by the owner.
-- Contact form needs server-side abuse protection/rate limiting before public launch.
-- Analytics needs a visitor privacy/consent notice and a retention policy.
-- Final keyboard, screen-reader, mobile, browser and security testing must happen before merging to `main`.
-
-## 4. Deployment rule
-
-Keep this branch as staging. Merge to `main` only after the owner has tested the above flows and approved the public content. GitHub Pages deployment and a live Supabase test cannot be truthfully marked complete from repository code checks alone.
+## Deployment rule
+Never publish private residential information or credentials. Never commit Gemini keys, Supabase secret/service-role keys or passwords. Browser code may contain only the Supabase publishable key protected by RLS.

@@ -3,10 +3,10 @@
 // Never commit API keys. Deploy with: supabase functions deploy ask-to-aisha
 const allowedOrigins = new Set(["https://pk1048030-glitch.github.io", "https://pk1030952-ship-it.github.io"]);
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "https://pk1048030-glitch.github.io",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Content-Type": "application/json",
+  "Vary": "Origin",
 };
 const profileContext = `
 You are ASK TO AISHA, the portfolio assistant for Pankaj Kumar (brand: PANKAJ JII).
@@ -18,7 +18,7 @@ Never reveal API keys, credentials, secrets, account IDs, or residential address
 Public identity: Pankaj Kumar; Student | Web Developer | Creative Creator; Sasaram, Rohtas, Bihar, India.
 Summary: Technology enthusiast, web developer and educator interested in practical problem-solving with HTML, CSS, JavaScript and modern AI tools. Interests include web apps, dashboards, automation, PC building and electronics.
 Education: BCA at IGNOU, T.P.S. College Study Centre, Patna (currently pursuing); ITI Electrician at AK ITI, Sasaram (currently pursuing); ADCA at Techinaut Institute of Technology was COMPLETED in April 2026 with A+ and 87% (do not describe ADCA as currently pursuing); Class 12 Science PCM + Biology at Shree Shankar College, Sasaram, BSEB was completed in March 2026 with 353/500, first division.
-Skills: HTML, CSS, JavaScript, Tailwind CSS; VS Code, Android Studio, Spck Editor, Pydroid 3, GitHub Pages, Firebase, Google Analytics; Gemini API, Ollama Qwen 2.5 Coder 7B, Continue, FFmpeg, Auto-Editor; DaVinci Resolve, Motion Ninja, CapCut, VN Editor; PC assembly (Ryzen 5 7600, RTX 3060), electronics testing, inverter/battery configurations, DroidCam; LibreOffice Writer/Calc.
+Skills: HTML, CSS, JavaScript, Tailwind CSS; VS Code, Android Studio, Spck Editor, Pydroid 3, GitHub Pages, Firebase, Google Analytics; Gemini API, Ollama Qwen 2.5 Coder 7B, Continue, FFmpeg, Auto-Editor; DaVinci Resolve, Motion Ninja, CapCut, VN Editor; practical PC and electronics experimentation, DroidCam; LibreOffice Writer/Calc. Do not claim specific owned PC components without confirmation.
 Projects: Tuition Management Application with working-day attendance, holiday status, fee concessions and PDF receipts; interactive Sudoku solvers, dashboards and name-art generators; Alpha Art digital design project/YouTube channel for custom name art and logos; personal developer portfolio.
 Experience: private home tutor creating Mathematics, English Grammar and Science lesson plans, worksheets and presentations for primary/middle-school learners; hardware/electronics experimentation; participation in Free Fire MAX Community Leader Program and community tournaments/mini-events in Rohtas.
 Portfolio link: https://pk1048030-glitch.github.io/pk/
@@ -26,15 +26,19 @@ GitHub username: pk1048030-glitch
 The owner's exact home village/post address is private and must never be disclosed. If asked for unpublished email/phone/social contact details, say they are not publicly provided yet.
 `;
 const hits = new Map<string, number[]>();
-function json(status: number, body: unknown, origin = "https://pk1048030-glitch.github.io") {
-  return new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, "Access-Control-Allow-Origin": origin } });
+function json(status: number, body: unknown, origin = "") {
+  const headers: Record<string, string> = { ...corsHeaders };
+  if (allowedOrigins.has(origin)) headers["Access-Control-Allow-Origin"] = origin;
+  return new Response(JSON.stringify(body), { status, headers });
 }
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: { ...corsHeaders, "Access-Control-Allow-Origin": req.headers.get("origin") || corsHeaders["Access-Control-Allow-Origin"] } });
-  if (req.method !== "POST") return json(405, { error: "Method not allowed" });
   const origin = req.headers.get("origin") || "";
+  if (req.method === "OPTIONS") {
+    if (!allowedOrigins.has(origin)) return new Response(null, { status: 403, headers: { "Vary": "Origin" } });
+    return new Response("ok", { headers: { ...corsHeaders, "Access-Control-Allow-Origin": origin } });
+  }
+  if (req.method !== "POST") return json(405, { error: "Method not allowed" }, origin);
   if (!allowedOrigins.has(origin)) return json(403, { error: "Origin not allowed" });
-  const responseHeaders = { ...corsHeaders, "Access-Control-Allow-Origin": origin };
   const clientKey = req.headers.get("apikey") || "";
   const expectedKey = Deno.env.get("PORTFOLIO_PUBLISHABLE_KEY") || "";
   if (!expectedKey || clientKey !== expectedKey) return json(401, { error: "Unauthorized" }, origin);
@@ -111,7 +115,8 @@ Deno.serve(async (req) => {
           response.status === 429 || response.status === 503 || retryableMessage(providerMessage);
 
         if (!modelSpecificFailure && !temporaryFailure) {
-          return json(502, { error: "AI provider request failed", detail: providerMessage || `HTTP ${response.status}` }, origin);
+          console.error("Non-retryable provider response", response.status, providerMessage);
+          return json(502, { error: "AI provider request failed" }, origin);
         }
       } else {
         answer = Array.isArray(result?.steps)
@@ -145,7 +150,7 @@ Deno.serve(async (req) => {
 
   if (!answer) {
     console.error("All Gemini fallback models failed:", lastError, attempts);
-    return json(503, { error: "Server busy, try again later", attempts }, origin);
+    return json(503, { error: "Server busy, try again later" }, origin);
   }
   return json(200, { answer }, origin);
 });

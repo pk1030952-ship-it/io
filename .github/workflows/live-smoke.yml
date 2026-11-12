@@ -1,0 +1,26 @@
+name: Portfolio live endpoint smoke test
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [feature/pankaj-jii-portfolio-v1]
+    paths:
+      - scripts/live-smoke.cjs
+      - .github/workflows/live-smoke.yml
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Remote contact and AI checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Exercise Edge Functions over HTTPS
+        run: node scripts/live-smoke.cjs

@@ -52,9 +52,9 @@ Deno.serve(async (req) => {
   const history = Array.isArray(payload.history) ? payload.history.slice(-8).map(m => {
     const role = m.role === "assistant" ? "Aisha" : "Visitor";
     return `${role}: ${String(m.content || "").slice(0, 1200)}`;
-  }).join("\\n") : "";
+  }).join("\n") : "";
   const input = history
-    ? `Previous conversation:\\n${history}\\n\\nVisitor: ${message}\\nAisha:`
+    ? `Previous conversation:\n${history}\n\nVisitor: ${message}\nAisha:`
     : message;
   const response = await fetch("https://generativelanguage.googleapis.com/v1beta/interactions", {
     method: "POST",

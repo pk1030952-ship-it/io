@@ -1,52 +1,28 @@
-# PANKAJ JII — Final launch checklist
+# PANKAJ JII — Launch acceptance checklist
 
-Repository implementation is substantially complete. Items below require live environment verification, owner-approved content, or production operations.
+This document distinguishes source-code readiness, actual live testing and owner-only publishing steps. Do not assume a completed static check means the public site has been browser-tested.
 
-## Already verified
-- Supabase database tables and RLS are configured.
-- `portfolio-assets` bucket exists with public read and admin-only write/update/delete policies.
-- Approved admin authentication works.
-- ASK TO AISHA Edge Function has returned a successful live Gemini response.
-- Gemini/provider secrets are stored server-side in Supabase, not browser code.
-- Analytics requires visitor opt-in before events are sent.
+## Live verification — 12 November 2026
 
-## Publishing status
-- GitHub Pages was manually unpublished, and the owner selected `None` for the publishing branch on 12 November 2026. Do not select a publishing branch again before final acceptance.
-- Draft PR #2 is mergeable and its static CI checks have passed; it is **not merged**.
-- Supabase connector is now connected and the live Edge Function is deployed; read-only database checks and a focused RLS-helper security migration have been completed.
+- Confirmed Supabase project is healthy. Database tables and RLS are present.
+- `ask-to-aisha` **version 6 ACTIVE**. Gemini high-demand/timeout failures were observed in v5; version 6 provides a fast, explicitly labeled *verified portfolio facts* fallback and reduces repeated provider attempts.
+- Live HTTPS smoke run [43266774496, attempt 2](https://github.com/pk1030952-ship-it/io/actions/runs/43266774496) **passed**: allowed CORS 204, rejected origin 403, invalid contact 400, valid contact 200, repeated contact 429, and ASK TO AISHA 200 with correct ADCA fact.
+- Test contact `portfolio-smoke-43266774496@example.invalid` was deleted after verification; no QA inbox message remains.
+- `submit-contact` Edge Function **version 1 ACTIVE**. Browser sends to the function, not directly to database. Service-role-only RPC limits to one submission per fingerprint per 90 seconds and five per day. Anonymous/direct writes are blocked.
+- `public.is_admin()` was moved to `app_private.is_admin()`, preserving RLS references while removing the exposed RPC route. Anonymous test: false admin flag, zero visible admin/inbox rows.
+- Redundant permissive content policies were simplified; analytics foreign-key index added. The latest security advisor flags only Supabase Auth leaked-password protection disabled, plus informational/unused table/index notices.
+- Daily Supabase Cron job **pj-portfolio-retention** is ACTIVE at 03:15 UTC; deletes site events older than 90 days and rate-limit fingerprints older than 48 hours. Does not delete actual inbox contact messages.
+- GitHub PR [#2](https://github.com/pk1030952-ship-it/io/pull/2) remains **Draft, mergeable, unmerged**. Static checks pass; Pages was manually unpublished and its source set to `None` by the owner.
 
-## Verified live Supabase deployment (12 November 2026)
-- The connected Supabase project was verified `ACTIVE_HEALTHY`.
-- `ask-to-aisha` Edge Function was updated from version 4 to version 5 with the development branch source.
-- Retrieved deployed version 5 and checked CORS preflight restriction, non-sensitive visitor errors and completed-ADCA factual context.
-- Database contact and analytics policies were inspected; the `is_admin()` SECURITY DEFINER helper was moved (preserving its RLS/Storage policy references) into non-exposed `app_private` schema using the connected Supabase migration action.
-- The security advisor was rerun and the two public-Security-Definer warnings are resolved. The remaining warning is leaked-password protection disabled.
-- A second focused migration added an index to `public.site_events(project_id)` and replaced redundant `FOR ALL` content RLS policies with separate admin INSERT/UPDATE/DELETE policies; the existing SELECT permissions are unchanged.
-- Security advisors now show only leaked-password protection disabled; performance advisor shows one newly created, not-yet-used event index and no missing-index or multiple-permissive-policy warnings.
-- Anonymous-role SQL test confirmed `app_private.is_admin()` is false and anonymous SELECT can see zero admin roster rows and zero contact message rows.
-- GitHub SQL starter files have been synchronized with these live migrations.
-- Supabase Auth leaked-password protection is disabled (security advisor warning). Review available Auth settings before launch.
-- Actual chatbot provider response on the new deployment and complete browser acceptance testing remain pending.
+## Still required before public launch
 
-## Required before merging to main
-1. ~~Deploy latest `supabase/functions/ask-to-aisha/index.ts`~~ — deployed and verified as ACTIVE version 5 on 12 November 2026. Re-deploy if Edge source changes.
-2. Test ASK TO AISHA from the final GitHub Pages origin.
-3. Test admin login, project/skill/social CRUD, contact inbox, resume upload and profile-photo upload.
-4. Test public contact form and confirm the message reaches the admin inbox.
-5. Add real resume/photo/contact/social/project data, or intentionally leave each unavailable item unpublished.
-6. Add durable server-side abuse protection/rate limiting for public contact submissions and monitor AI usage.
-7. Define an analytics retention period and periodically delete older events.
-8. Complete keyboard, screen-reader, mobile and major-browser acceptance testing.
-9. Review the draft PR, merge to `main`, enable GitHub Pages and verify the production URL.
+1. Chromium mobile/desktop/admin UI smoke tests, and final keyboard/mobile/browser acceptance. A browser job is running; earlier failure exposed horizontal scrolling from off-screen decoration, and a viewport clip fix is now under test.
+2. Enable leaked-password protection in the Supabase Dashboard if available under Authentication security; this is not exposed as a write action through the connected Supabase tools.
+3. Owner-approved public contact/social/project URLs, photo and resume must be supplied or the missing items intentionally kept as placeholders/unpublished. Never invent them.
+4. Signed-in admin CRUD and real photo/resume upload, contact inbox and final domain testing. Automated HTTPS smoke tests spoof the correct Origin header, but do not replace a live published-browser test.
+5. Optional hardening: stronger anti-bot challenge and usage-budget monitoring for public AI/Contact endpoints. IP forwarding headers alone are not a strong abuse barrier.
+6. Only after the above: review PR, merge to `main`, set GitHub Pages source to `main` root, verify production URL and test once more.
 
 ## Deployment rule
-Never publish private residential information or credentials. Never commit Gemini keys, Supabase secret/service-role keys or passwords. Browser code may contain only the Supabase publishable key protected by RLS.
 
-## Public contact endpoint cutover (12 November 2026)
-- Deployed `submit-contact` Edge Function version 1 with `verify_jwt = false`; the function checks the public publishable key, validates origin/inputs and calls a service-role-only database RPC.
-- Applied a transaction-safe RPC enforcing at most one message per fingerprint per 90 seconds and five per 24 hours, with no raw IP saved.
-- Verified second in-transaction test contact was rejected and rolled back all synthetic test data.
-- Revoked direct `anon`/`authenticated` INSERT on `contact_messages` and removed the public insert RLS policy.
-- Anonymous and signed-in visitors cannot directly execute the database RPC; only `service_role` has permission.
-- Updated public frontend to invoke `submit-contact`; **live HTTP/browser end-to-end contact submission is still unverified** because Pages is unpublished.
-- Additional large-scale bot protection (e.g. a verified challenge or gateway abuse controls) is recommended at public launch. IP forwarding headers are best-effort and not sufficient for strong anti-abuse.
+No user passwords, Supabase secret/service-role key, or Gemini API keys in GitHub or browser code. The Supabase publishable key is designed for clients but must always be combined with RLS. Do not publish a private residential address or unapproved contact information.

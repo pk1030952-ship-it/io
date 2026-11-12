@@ -9,7 +9,7 @@ async function adminCheck(session){
  if(!session){login.classList.remove('hidden');dash.classList.add('hidden');return}
  const {data,error}=await client.from('admin_users').select('user_id').eq('user_id',session.user.id).maybeSingle();
  if(error||!data){await client.auth.signOut();say('This account is not on the approved admin list.');login.classList.remove('hidden');dash.classList.add('hidden');return}
- login.classList.add('hidden');dash.classList.remove('hidden');$('#adminEmail').textContent=session.user.email||'Signed in';await loadData();
+ login.classList.add('hidden');dash.classList.remove('hidden');$('#adminEmail').textContent=session.user.email||'Signed in';await loadData();await loadProfile();
 }
 async function loadData(){
  $('#connectionStatus').textContent='Connected. Admin role verified by Supabase RLS.';
@@ -18,6 +18,12 @@ async function loadData(){
  const list=projects.data||[];$('#projectCount').textContent=list.length;$('#publishedCount').textContent=list.filter(p=>p.published).length;$('#messageCount').textContent=messages.count??'—';
  $('#projectList').innerHTML=list.length?list.map(p=>'<article class="project-row"><div><b>'+escapeHtml(p.title)+'</b><p>'+escapeHtml(p.category)+' · '+(p.published?'Published':'Draft')+(p.featured?' · Featured':'')+'</p></div><div class="project-actions"><button data-edit="'+p.id+'">Edit</button><button class="danger" data-delete="'+p.id+'">Delete</button></div></article>').join(''):'<p class="muted">No projects yet. Add your first verified project.</p>';
 }
+async function loadProfile(){
+ const {data,error}=await client.from('profile').select('*').order('updated_at',{ascending:false}).limit(1).maybeSingle();
+ if(error){$('#profileMessage').textContent='Could not load profile: '+error.message;return}
+ const p=data||{};$('#profileName').value=p.display_name||'Pankaj Kumar';$('#profileTitle').value=p.professional_title||'Student | Web Developer | Creative Creator';$('#profileLocation').value=p.location||'Sasaram, Bihar';$('#profileAboutEn').value=p.about_en||'';$('#profileAboutHi').value=p.about_hi||'';
+}
+$('#profileForm').addEventListener('submit',async e=>{e.preventDefault();const message=$('#profileMessage');message.textContent='Saving…';const {data:existing,error:readError}=await client.from('profile').select('id').order('updated_at',{ascending:false}).limit(1).maybeSingle();if(readError){message.textContent='Could not check existing profile: '+readError.message;return}const row={display_name:$('#profileName').value.trim(),professional_title:$('#profileTitle').value.trim(),location:$('#profileLocation').value.trim(),about_en:$('#profileAboutEn').value.trim()||null,about_hi:$('#profileAboutHi').value.trim()||null,updated_at:new Date().toISOString()};const query=existing?client.from('profile').update(row).eq('id',existing.id):client.from('profile').insert(row);const {error}=await query;if(error){message.textContent='Save failed: '+error.message;return}message.textContent='Profile saved successfully.';});
 function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 $('#loginForm').addEventListener('submit',async e=>{e.preventDefault();say('Signing in…');const {data,error}=await client.auth.signInWithPassword({email:$('#email').value,password:$('#password').value});if(error){say(error.message);return}await adminCheck(data.session)});
 $('#googleLogin').addEventListener('click',async()=>{const {error}=await client.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.href.split('?')[0]}});if(error)say(error.message)});

@@ -16,7 +16,7 @@ supabase functions deploy ask-to-aisha
 ```
 Replace placeholders only in your local terminal. Do not share terminal output containing secrets.
 
-The function calls Gemini 2.5 Flash. If the key was created for a different provider, this function must be adapted to that provider before deployment.
+The function calls Gemini 3.8 Flash through Google's Interactions API, with stateless request storage (`store=false`). If the key was created for a different provider, this function must be adapted to that provider before deployment.
 
 ## Function settings
 `supabase/config.toml` disables gateway JWT verification for this public portfolio endpoint; the function itself checks the exact configured publishable key and allowlisted browser Origin. This is not a substitute for abuse prevention. Its in-memory per-instance rate limit is best-effort only; production launch still needs durable IP/session rate limiting, monitoring, and spend limits.

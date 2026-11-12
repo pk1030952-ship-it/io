@@ -1,6 +1,7 @@
 // Supabase Edge Function: ask-to-aisha
 // Configure GEMINI_API_KEY with: supabase secrets set GEMINI_API_KEY=...
 // Never commit API keys. Deploy with: supabase functions deploy ask-to-aisha
+const allowedOrigins = new Set(["https://pk1048030-glitch.github.io", "https://pk1030952-ship-it.github.io"]);
 const corsHeaders = {
   "Access-Control-Allow-Origin": "https://pk1048030-glitch.github.io",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -25,27 +26,28 @@ GitHub username: pk1048030-glitch
 The owner's exact home village/post address is private and must never be disclosed. If asked for unpublished email/phone/social contact details, say they are not publicly provided yet.
 `;
 const hits = new Map<string, number[]>();
-function json(status: number, body: unknown) {
-  return new Response(JSON.stringify(body), { status, headers: corsHeaders });
+function json(status: number, body: unknown, origin = "https://pk1048030-glitch.github.io") {
+  return new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, "Access-Control-Allow-Origin": origin } });
 }
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  if (req.method === "OPTIONS") return new Response("ok", { headers: { ...corsHeaders, "Access-Control-Allow-Origin": req.headers.get("origin") || corsHeaders["Access-Control-Allow-Origin"] } });
   if (req.method !== "POST") return json(405, { error: "Method not allowed" });
   const origin = req.headers.get("origin") || "";
-  if (origin !== "https://pk1048030-glitch.github.io") return json(403, { error: "Origin not allowed" });
-  const auth = req.headers.get("authorization") || "";
-  const anon = Deno.env.get("SUPABASE_ANON_KEY") || "";
-  if (!anon || auth !== `Bearer ${anon}`) return json(401, { error: "Unauthorized" });
+  if (!allowedOrigins.has(origin)) return json(403, { error: "Origin not allowed" });
+  const responseHeaders = { ...corsHeaders, "Access-Control-Allow-Origin": origin };
+  const clientKey = req.headers.get("apikey") || "";
+  const expectedKey = Deno.env.get("PORTFOLIO_PUBLISHABLE_KEY") || "";
+  if (!expectedKey || clientKey !== expectedKey) return json(401, { error: "Unauthorized" }, origin);
   const apiKey = Deno.env.get("GEMINI_API_KEY");
-  if (!apiKey) return json(503, { error: "AI service is not configured yet" });
+  if (!apiKey) return json(503, { error: "AI service is not configured yet" }, origin);
   let payload: { message?: string; history?: { role: string; content: string }[] };
-  try { payload = await req.json(); } catch { return json(400, { error: "Invalid JSON" }); }
+  try { payload = await req.json(); } catch { return json(400, { error: "Invalid JSON" }, origin); }
   const message = String(payload.message || "").trim();
-  if (!message || message.length > 1500) return json(400, { error: "Message must be 1–1500 characters" });
+  if (!message || message.length > 1500) return json(400, { error: "Message must be 1–1500 characters" }, origin);
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
   const now = Date.now();
   const recent = (hits.get(ip) || []).filter(t => now - t < 600000);
-  if (recent.length >= 12) return json(429, { error: "Too many requests. Please try again in a few minutes." });
+  if (recent.length >= 12) return json(429, { error: "Too many requests. Please try again in a few minutes." }, origin);
   recent.push(now); hits.set(ip, recent);
   const history = Array.isArray(payload.history) ? payload.history.slice(-8).map(m => ({
     role: m.role === "assistant" ? "model" : "user",
@@ -62,8 +64,8 @@ Deno.serve(async (req) => {
     }),
   });
   const result = await response.json().catch(() => ({}));
-  if (!response.ok) return json(502, { error: "AI provider request failed", detail: result?.error?.message || "Unknown provider error" });
+  if (!response.ok) return json(502, { error: "AI provider request failed", detail: result?.error?.message || "Unknown provider error" }, origin);
   const answer = result?.candidates?.[0]?.content?.parts?.map((p: { text?: string }) => p.text || "").join("").trim();
-  if (!answer) return json(502, { error: "AI returned an empty response" });
-  return json(200, { answer });
+  if (!answer) return json(502, { error: "AI returned an empty response" }, origin);
+  return json(200, { answer }, origin);
 });

@@ -63,6 +63,7 @@ Deno.serve(async (req) => {
 
   let answer = "";
   let lastError = "";
+  const attempts: { model: string; status: number | string; detail: string }[] = [];
 
   for (let index = 0; index < models.length; index++) {
     const model = models[index];
@@ -88,6 +89,7 @@ Deno.serve(async (req) => {
 
       if (!response.ok) {
         lastError = `${model}: ${providerMessage || `HTTP ${response.status}`}`;
+        attempts.push({ model, status: response.status, detail: (providerMessage || `HTTP ${response.status}`).slice(0, 220) });
         const retryable = response.status === 429 || response.status === 503 ||
           response.status === 404 || retryableMessage(providerMessage);
         if (!retryable) {
@@ -101,14 +103,17 @@ Deno.serve(async (req) => {
               .map((part: { text?: string }) => part.text || "").join("").trim()
           : "";
 
-        if (answer) break;
+        if (answer) { attempts.push({ model, status: response.status, detail: "success" }); break; }
         lastError = `${model}: empty response`;
+        attempts.push({ model, status: response.status, detail: "empty response" });
       }
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") {
         lastError = `${model}: timed out after 20 seconds`;
+        attempts.push({ model, status: "timeout", detail: "timed out after 20 seconds" });
       } else {
         lastError = `${model}: ${String(error)}`;
+        attempts.push({ model, status: "network_error", detail: String(error).slice(0, 220) });
       }
     } finally {
       clearTimeout(timeout);
@@ -119,7 +124,7 @@ Deno.serve(async (req) => {
 
   if (!answer) {
     console.error("All Gemini fallback models failed:", lastError);
-    return json(503, { error: "Server busy, try again later" }, origin);
+    return json(503, { error: "Server busy, try again later", attempts }, origin);
   }
   return json(200, { answer }, origin);
 });

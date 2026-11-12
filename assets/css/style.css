@@ -14,3 +14,5 @@
 
 /* Accessibility */
 .skip-link{position:fixed;left:1rem;top:-5rem;z-index:9999;padding:.7rem 1rem;background:var(--surface,#111827);color:inherit;border:1px solid var(--line,#334155);border-radius:10px;text-decoration:none}.skip-link:focus{top:1rem}a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid currentColor;outline-offset:3px}@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto!important}*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}.loader{display:none!important}}
+
+.contact-hp{position:absolute!important;left:-10000px!important;width:1px!important;height:1px!important;overflow:hidden!important}

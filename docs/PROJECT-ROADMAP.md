@@ -87,6 +87,7 @@ Do not publish placeholders as real contact links or claim unfinished backend fe
 ## Phase 4 — ASK TO AISHA
 - [x] Add portfolio-only assistant knowledge draft
 - [x] Add Gemini-backed Supabase Edge Function source (secret key stays server-side)
+- [x] Migrate provider call to Gemini 3.8 Flash Interactions API
 - [x] Add floating text-chat UI and invoke the Edge Function
 - [x] Add origin allowlist, request length limit, and best-effort per-instance throttling
 - [ ] Revoke the API key exposed in chat and create a replacement with the provider

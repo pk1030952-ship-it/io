@@ -49,23 +49,32 @@ Deno.serve(async (req) => {
   const recent = (hits.get(ip) || []).filter(t => now - t < 600000);
   if (recent.length >= 12) return json(429, { error: "Too many requests. Please try again in a few minutes." }, origin);
   recent.push(now); hits.set(ip, recent);
-  const history = Array.isArray(payload.history) ? payload.history.slice(-8).map(m => ({
-    role: m.role === "assistant" ? "model" : "user",
-    parts: [{ text: String(m.content || "").slice(0, 1200) }],
-  })) : [];
-  const contents = [...history, { role: "user", parts: [{ text: message }] }];
-  const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent", {
+  const history = Array.isArray(payload.history) ? payload.history.slice(-8).map(m => {
+    const role = m.role === "assistant" ? "Aisha" : "Visitor";
+    return `${role}: ${String(m.content || "").slice(0, 1200)}`;
+  }).join("\\n") : "";
+  const input = history
+    ? `Previous conversation:\\n${history}\\n\\nVisitor: ${message}\\nAisha:`
+    : message;
+  const response = await fetch("https://generativelanguage.googleapis.com/v1beta/interactions", {
     method: "POST",
     headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
     body: JSON.stringify({
-      systemInstruction: { parts: [{ text: profileContext }] },
-      contents,
-      generationConfig: { temperature: 0.7, maxOutputTokens: 500 },
+      model: "gemini-3.8-flash",
+      store: false,
+      system_instruction: profileContext,
+      input,
+      generation_config: { thinking_level: "low" },
     }),
   });
   const result = await response.json().catch(() => ({}));
   if (!response.ok) return json(502, { error: "AI provider request failed", detail: result?.error?.message || "Unknown provider error" }, origin);
-  const answer = result?.candidates?.[0]?.content?.parts?.map((p: { text?: string }) => p.text || "").join("").trim();
+  const answer = Array.isArray(result?.steps)
+    ? result.steps.filter((step: { type?: string }) => step.type === "model_output")
+        .flatMap((step: { content?: { type?: string; text?: string }[] }) => step.content || [])
+        .filter((part: { type?: string }) => part.type === "text")
+        .map((part: { text?: string }) => part.text || "").join("").trim()
+    : "";
   if (!answer) return json(502, { error: "AI returned an empty response" }, origin);
   return json(200, { answer }, origin);
 });

@@ -10,6 +10,11 @@ Repository implementation is substantially complete. Items below require live en
 - Gemini/provider secrets are stored server-side in Supabase, not browser code.
 - Analytics requires visitor opt-in before events are sent.
 
+## Publishing status
+- GitHub Pages was manually unpublished, and the owner selected `None` for the publishing branch on 12 November 2026. Do not select a publishing branch again before final acceptance.
+- Draft PR #2 is mergeable and its static CI checks have passed; it is **not merged**.
+- Supabase connector has been suggested but must be explicitly connected before direct live SQL/function deployment. No new Edge Function or SQL change has been applied to Supabase during this review.
+
 ## Required before merging to main
 1. Deploy the latest `supabase/functions/ask-to-aisha/index.ts` revision in Supabase.
 2. Test ASK TO AISHA from the final GitHub Pages origin.

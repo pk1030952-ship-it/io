@@ -1,6 +1,6 @@
 # PANKAJ JII — Development Roadmap
 
-Last updated: 2026-11-10
+Last updated: 2026-11-12
 
 This is the working checklist for the portfolio. A checked item means implemented in the repository; it does not automatically mean production-tested.
 
@@ -27,7 +27,7 @@ This is the working checklist for the portfolio. A checked item means implemente
 - [x] Initial SQL schema draft with RLS enabled
 - [x] Review and apply SQL in the user's Supabase project (7 tables verified)
 - [x] Create and configure Supabase project
-- [x] Apply table RLS policies; Storage policies remain pending
+- [x] Apply table RLS policies and Storage policies
 - [ ] Configure auth providers and redirect URLs
 - [x] Seed trusted admin account securely
 - [x] Connect public profile, skills, projects and social links to Supabase; uploaded photo/resume render on public page
@@ -46,11 +46,11 @@ This is the working checklist for the portfolio. A checked item means implemente
 - [ ] Safe code-editing workflow (no arbitrary unauthenticated code execution)
 
 ## Phase 4 — ASK TO AISHA
-- [ ] Define portfolio-only knowledge base from verified content
-- [ ] Create bilingual chat UI and creative welcome messages
-- [ ] Implement text-only chat and local chat history
-- [ ] Secure server-side AI endpoint
-- [ ] Restrict answers to portfolio information and approved technology/coding help
+- [x] Define portfolio-only knowledge base from verified content
+- [x] Create bilingual chat UI and creative welcome messages
+- [x] Implement text-only chat and local chat history
+- [x] Secure server-side AI endpoint
+- [x] Restrict answers to verified portfolio information
 - [ ] Test prompt injection, privacy and rate limits
 
 ## Phase 5 — Analytics
@@ -90,8 +90,18 @@ Do not publish placeholders as real contact links or claim unfinished backend fe
 - [x] Migrate provider call to Gemini 3.8 Flash Interactions API
 - [x] Add floating text-chat UI and invoke the Edge Function
 - [x] Add origin allowlist, request length limit, and best-effort per-instance throttling
-- [ ] Revoke the API key exposed in chat and create a replacement with the provider
-- [ ] Set GEMINI_API_KEY and PORTFOLIO_PUBLISHABLE_KEY in Supabase Edge Function secrets
-- [ ] Deploy the Edge Function and verify provider/model access
+- [x] Replace the previously exposed provider key and store the replacement only as a Supabase secret
+- [x] Set GEMINI_API_KEY and PORTFOLIO_PUBLISHABLE_KEY in Supabase Edge Function secrets
+- [x] Deploy the Edge Function and verify provider/model access with live successful response
 - [ ] Implement durable rate limiting, monitoring, and usage/spend controls before public launch
 - [ ] End-to-end browser test on the actual GitHub Pages origin
+
+## 2026-11-12 launch audit
+- [x] Supabase Storage bucket/policies verified for portfolio assets
+- [x] ASK TO AISHA live provider response verified
+- [x] Add bounded multi-model Gemini fallback to avoid worker hangs
+- [x] Clarify completed ADCA/Class 12 facts in assistant prompt
+- [ ] Deploy latest fallback + education prompt revision to Supabase Edge Function
+- [ ] End-to-end ASK TO AISHA test from final GitHub Pages origin
+- [ ] Reconcile development branch with the 1 commit currently on main before merge
+- [ ] Replace remaining demo contact/social/project assets with user-approved real data or intentionally omit them

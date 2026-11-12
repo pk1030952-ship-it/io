@@ -32,7 +32,7 @@ This is the working checklist for the portfolio. A checked item means implemente
 - [x] Seed trusted admin account securely
 - [x] Connect public profile, skills, projects and social links to Supabase; uploaded photo/resume render on public page
 - [x] Connect contact message form and admin inbox; file storage remains pending
-- [ ] Add server-side validation and rate limiting
+- [ ] Add server-side validation and rate limiting (required before public contact-form launch)
 
 ## Phase 3 — Admin dashboard
 - [x] Admin login UI and secure session handling (requires Supabase project config)
@@ -57,7 +57,8 @@ This is the working checklist for the portfolio. A checked item means implemente
 - [x] Define basic event model (page_view and project_click; consent and retention policy still pending)
 - [x] Track page views and project clicks; referrer host is captured when available
 - [x] Admin analytics dashboard with 7/30/90-day filters
-- [ ] Add visitor analytics consent/privacy notice and retention controls
+- [x] Add visitor opt-in consent before sending anonymous analytics events
+- [ ] Add analytics retention controls
 
 ## Phase 6 — Quality and launch
 - [ ] Browser/device testing

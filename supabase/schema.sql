@@ -102,12 +102,8 @@ for update to authenticated using (app_private.is_admin()) with check (app_priva
 create policy "Admins delete socials" on public.social_links
 for delete to authenticated using (app_private.is_admin());
 
-create policy "Public submit contact message" on public.contact_messages
-for insert to anon, authenticated with check (
- length(trim(name)) between 1 and 100
- and length(trim(email)) between 3 and 254
- and length(trim(message)) between 1 and 5000
-);
+-- Public contact insertion uses only the protected submit-contact Edge Function.
+-- Apply supabase/contact-security.sql after deploying submit-contact.
 create policy "Admins read messages" on public.contact_messages
 for select to authenticated using (app_private.is_admin());
 create policy "Admins update messages" on public.contact_messages

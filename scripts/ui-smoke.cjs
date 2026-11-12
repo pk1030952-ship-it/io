@@ -29,8 +29,10 @@ const root = 'http://127.0.0.1:8765';
         await page.locator('.desktop-nav a[href="#about"]').click();
         assert(!(await page.locator('body').evaluate(el=>el.classList.contains('menu-open'))),'Mobile navigation did not close');
       }
-      const horizontal=await page.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth);
-      assert(horizontal<16,'Unexpected horizontal overflow: '+horizontal+'px at '+vp.width+'px');
+      const overflow=await page.evaluate(()=>{window.scrollTo(1000,0);const scrollX=window.scrollX;window.scrollTo(0,0);const main=document.querySelector('main')?.getBoundingClientRect();return {scrollX,mainRight:main?.right,windowWidth:innerWidth}});
+      console.log('Horizontal overflow check at '+vp.width+'px:',JSON.stringify(overflow));
+      assert(overflow.scrollX<2,'Page permits horizontal scrolling: '+overflow.scrollX+'px');
+      assert(overflow.mainRight<=overflow.windowWidth+2,'Main content extends past viewport');
       assert.deepEqual(errors,[],'Runtime JavaScript errors');
       console.log('Public page UI passed at '+vp.width+'px');
       await page.close();

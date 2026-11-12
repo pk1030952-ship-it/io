@@ -1,0 +1,34 @@
+name: Portfolio live endpoint smoke test
+
+on:
+  workflow_dispatch:
+    inputs:
+      contact_write:
+        description: 'Create a temporary QA contact (must be manually cleaned)'
+        type: boolean
+        required: false
+        default: false
+  push:
+    branches: [feature/pankaj-jii-portfolio-v1]
+    paths:
+      - scripts/live-smoke.cjs
+      - .github/workflows/live-smoke.yml
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Remote contact and AI checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Exercise Edge Functions over HTTPS
+        env:
+          RUN_CONTACT_WRITE_SMOKE: ${{ inputs.contact_write }}
+        run: node scripts/live-smoke.cjs

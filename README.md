@@ -1,42 +1,40 @@
-<!-- Dynamic Header Wave Banner -->
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0E75B6&height=200&section=header&text=Pankaj%20Kumar&fontSize=65&fontColor=ffffff" width="100%"/>
+# PANKAJ JII — Personal Portfolio
 
-<div align="center">
-  <!-- FIXED Typing SVG -->
-  <a href="https://git.io/typing-svg">
-    <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=600&size=22&pause=1000&color=0E75B6&center=true&vCenter=true&width=500&lines=Android+App+Developer;BCA+Student+at+IGNOU;3D+Animator+%26+Teacher;Passionate+about+Kotlin" alt="Typing SVG" />
-  </a>
-</div>
+Responsive personal portfolio for Pankaj Kumar with a Supabase-backed admin dashboard, dynamic content, privacy-conscious analytics, asset uploads, contact inbox and ASK TO AISHA.
 
-<!-- Social Links -->
-<p align="center">
-  <a href="mailto:pankaj.nic@yahoo.com"><img src="https://img.shields.io/badge/Email-0E75B6?style=for-the-badge&logo=yahoo&logoColor=white" alt="Email"/></a>
-  <a href="https://youtube.com/@LappuToonsHindin"><img src="https://img.shields.io/badge/YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white" alt="YouTube"/></a>
-</p>
+## Current status
 
----
+The development branch is ready for final acceptance testing, but it is **not production-approved yet**. Do not treat placeholders as verified public information.
 
-## 👨‍💻 About Me
+### Implemented
+- Home, About, Skills, Projects, Education, Resume, Social and Contact sections
+- Responsive layout, Hindi/English toggle, dark/light theme and project filters
+- Supabase profile, project, skill and social content loading
+- Admin authentication with database-enforced admin authorization
+- Project/skill/social management and contact inbox
+- Resume/profile-photo upload flow with `portfolio-assets` Storage policies
+- Visitor opt-in analytics with admin reporting
+- Public contact form routed through a protected Supabase Edge Function with transaction-safe database rate limiting, plus browser honeypot/cooldown
+- ASK TO AISHA via Supabase Edge Function with server-side Gemini secret and bounded model fallback
+- SEO metadata, keyboard focus treatment and reduced-motion support
 
-<blockquote>
-  Building robust Android applications, studying Computer Applications, and creating engaging 3D animated content. 
-</blockquote>
+### Remaining before production launch
+- Deploy latest Edge Function revision and test chat on the final Pages origin
+- Add or intentionally omit real profile photo, resume, contact details, social URLs and verified project links
+- Run final end-to-end browser contact/chat tests and review stronger bot protection/usage caps for public endpoints
+- Decide analytics retention policy
+- Complete mobile/browser/accessibility/security acceptance testing
+- Merge the development PR to `main`, enable GitHub Pages and verify the live URL
 
-- 🚀 **Currently Building:** A comprehensive **Tuition Fee Management App** with daily attendance and billing logic (Kotlin, Android Studio).
-- 🧠 **Currently Learning:** Advanced Android architecture & AI tools integration.
-- 🎓 **Education:** BCA at Indira Gandhi National Open University (IGNOU).
-- 💡 **Beyond Coding:** Teaching foundational English to students and producing AI-animated Shorts for **Lappu Toons Hindiṅ**.
+## Security
+- Never commit Supabase secret/service-role keys, Gemini API keys, passwords or private credentials.
+- Browser code uses only a Supabase publishable key; Row Level Security protects data.
+- Admin authorization is enforced in Supabase, not by hiding frontend controls.
+- AI provider credentials stay in Supabase Edge Function secrets.
+- Exact residential address is intentionally excluded from public portfolio/AI knowledge.
 
----
+## Development branch
 
-## 🧰 Tech Stack & Tools
+`feature/pankaj-jii-portfolio-v1`
 
-<p align="center">
-  <!-- Premium Rounded Icons -->
-  <a href="https://skillicons.dev">
-    <img src="https://skillicons.dev/icons?i=kotlin,androidstudio,python,githubactions,git,github,vscode,windows&perline=8" alt="Tech Stack" />
-  </a>
-</p>
-
-<!-- Dynamic Footer Wave -->
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0E75B6&height=100&section=footer" width="100%"/>
+Production remains on `main` until final acceptance is complete.

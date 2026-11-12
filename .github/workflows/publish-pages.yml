@@ -1,0 +1,76 @@
+name: Publish PANKAJ JII portfolio
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-pages
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    name: Validate production files
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Check HTML links and browser JavaScript syntax
+        run: |
+          node --check assets/js/main.js
+          node --check assets/js/admin.js
+          node --check assets/js/supabase-config.js
+          node scripts/validate.cjs
+
+  build:
+    name: Package published files only
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/configure-pages@v5
+      - name: Build static site artifact
+        run: |
+          mkdir -p site-dist
+          cp index.html admin.html site-dist/
+          cp -R assets site-dist/
+          touch site-dist/.nojekyll
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: site-dist
+
+  deploy:
+    name: Publish from main
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy production artifact
+        uses: actions/deploy-pages@v4
+        id: deployment
+      - name: Verify website serves the released HTML
+        env:
+          TARGET_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          for attempt in $(seq 1 8); do
+            if curl --fail --silent --show-error --location --max-time 12 "$TARGET_URL" | grep -q 'Tuition Management Application'; then
+              echo "Published website contains the new PANKAJ JII project content."
+              exit 0
+            fi
+            sleep 6
+          done
+          echo "Published site did not expose the expected release content."
+          exit 1

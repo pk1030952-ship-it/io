@@ -1,0 +1,28 @@
+name: Portfolio static checks
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [feature/pankaj-jii-portfolio-v1]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: JavaScript and HTML checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Check browser JavaScript syntax
+        run: |
+          node --check assets/js/main.js
+          node --check assets/js/admin.js
+          node --check assets/js/supabase-config.js
+      - name: Audit HTML IDs, navigation and local references
+        run: node scripts/validate.cjs

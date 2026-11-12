@@ -1,0 +1,5 @@
+[functions.ask-to-aisha]
+verify_jwt = false
+
+[functions.submit-contact]
+verify_jwt = false

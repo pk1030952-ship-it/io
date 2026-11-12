@@ -6,6 +6,10 @@ on:
     branches: [feature/pankaj-jii-portfolio-v1]
     paths:
       - scripts/ui-smoke.cjs
+      - assets/css/style.css
+      - assets/js/main.js
+      - admin.html
+      - index.html
       - .github/workflows/ui-smoke.yml
 
 permissions:

@@ -16,9 +16,9 @@ This document distinguishes source-code readiness, actual live testing and owner
 
 ## Still required before public launch
 
-1. Chromium mobile/desktop/admin UI smoke tests, and final keyboard/mobile/browser acceptance. A browser job is running; earlier failure exposed horizontal scrolling from off-screen decoration, and a viewport clip fix is now under test.
-2. Enable leaked-password protection in the Supabase Dashboard if available under Authentication security; this is not exposed as a write action through the connected Supabase tools.
-3. Owner-approved public contact/social/project URLs, photo and resume must be supplied or the missing items intentionally kept as placeholders/unpublished. Never invent them.
+1. Automated Chromium desktop (1280px), mobile (390px), and admin login-screen smoke tests **passed** in [GitHub Actions](https://github.com/pk1030952-ship-it/io/actions/runs/43270283886), including local chat history restoration. Full real-device/screen-reader checks remain optional quality assurance before launch.
+2. Supabase Auth leaked-password protection is still flagged in Security Advisor; official Supabase documentation says it is a Pro-plan-or-higher feature. If your project has access, enable it in Auth settings. For any plan, use a strong unique admin password.
+3. Public code now shows verified project/education summaries and a GitHub link; missing contact/social URLs, photo and resume remain intentionally unavailable until the owner supplies them. No private address or invented links are published.
 4. Signed-in admin CRUD and real photo/resume upload, contact inbox and final domain testing. Automated HTTPS smoke tests spoof the correct Origin header, but do not replace a live published-browser test.
 5. Optional hardening: stronger anti-bot challenge and usage-budget monitoring for public AI/Contact endpoints. IP forwarding headers alone are not a strong abuse barrier.
 6. Only after the above: review PR, merge to `main`, set GitHub Pages source to `main` root, verify production URL and test once more.
@@ -26,3 +26,8 @@ This document distinguishes source-code readiness, actual live testing and owner
 ## Deployment rule
 
 No user passwords, Supabase secret/service-role key, or Gemini API keys in GitHub or browser code. The Supabase publishable key is designed for clients but must always be combined with RLS. Do not publish a private residential address or unapproved contact information.
+
+## Final code audit evidence
+- All 27 files on development head were scanned for secret-looking Supabase/Google/GitHub credentials, private key blocks and unapproved personal contact/address patterns; no matches were found in that scan. This is a pattern check, not a substitute for a full security review.
+- Latest real Chromium UI smoke tests, remote contact/AI endpoint smoke tests and static GitHub checks passed. Browser state is local-only and bounded; no chat history stored server-side by the client.
+- GitHub Pages publishing is still disabled by the owner. **Public launch has not been completed** and requires final owner action after acceptance.
